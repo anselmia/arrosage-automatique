@@ -1,4 +1,3 @@
-// LED.cpp
 #include "ev.h"
 
 EV::EV(int pin)
@@ -12,14 +11,4 @@ EV::EV(int pin)
 int EV::getState()
 {
     return evState;
-}
-
-void EV::turnON()
-{
-    evState = 1;
-}
-
-void EV::turnOFF()
-{
-    evState = 0;
 }

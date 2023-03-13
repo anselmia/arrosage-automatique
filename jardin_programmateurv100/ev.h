@@ -9,8 +9,6 @@ private:
 
 public:
     EV(int pin);
-    void turnON();
-    void turnOFF();
     int nextDayOn;
     int getState();
     int remainingTimeOn;
