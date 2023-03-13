@@ -631,7 +631,8 @@ void clock_parameter_screen()
 
 void other_parameter_screen()
 {
-  u8g.drawStr(10, 11, "Autres");
+  Serial.println(F(" Divers "));
+  u8g.drawStr(10, 11, "Divers");
   switch (menu.actualLine)
   {
   case 1:
@@ -640,19 +641,37 @@ void other_parameter_screen()
   case 4:
     u8g.drawStr(5, 22, "Auto ete/hiver :");
     activate_auto_mode_screen(160, 90, 22);
+    Serial.print(F("Auto ete/hiver : "));
+    Serial.print(eeprom.Read(160));
+    Serial.println(F(""));
     u8g.drawStr(5, 33, "Temp ete/hiver :");
     print_mem_value(70, 33, 161);
+    Serial.print(F("Temp ete/hiver : "));
+    Serial.print(eeprom.Read(161));
+    Serial.println(F(""));
     u8g.drawStr(5, 44, "Duree ete :");
     print_mem_value(70, 44, 162);
+    Serial.print(F("Duree ete : "));
+    Serial.print(eeprom.Read(162));
+    Serial.println(F(""));
     u8g.drawStr(5, 55, "Freq ete :");
     print_mem_value(70, 55, 163);
+    Serial.print(F("Freq ete : "));
+    Serial.print(eeprom.Read(163));
+    Serial.println(F(""));
     break;
   case 5:
   case 6:
-    u8g.drawStr(5, 22, "duree hiver :");
+    u8g.drawStr(5, 22, "Duree hiver :");
     print_mem_value(70, 22, 164);
+    Serial.print(F("Duree hiver : "));
+    Serial.print(eeprom.Read(164));
+    Serial.println(F(""));
     u8g.drawStr(5, 33, "Freq hivers :");
     print_mem_value(70, 33, 165);
+    Serial.print(F("Freq hivers : "));
+    Serial.print(eeprom.Read(165));
+    Serial.println(F(""));
     break;
   }
 }
@@ -660,6 +679,7 @@ void other_parameter_screen()
 void manual_mode_screen()
 {
   u8g.drawStr(20, 11, "Mode manuel");
+  Serial.println(F(" Mode manuel "));
   menu.ecran_princ_min = 60;
   manual_mode_state = 1;
   if (arrayofButton[2].type != -1)
@@ -682,9 +702,12 @@ void print_active_ev()
   {
     if (arrayOfEV[i].remainingTimeOn != 0)
     {
-      print_on_screen(2 + (16 * (i + 1)), 56, i + 1);
+      print_on_screen(2 + (16 * (i + 1)), 55, i + 1);
+      Serial.print(i + 1);
+      Serial.print(F("  "));
     }
   }
+  Serial.println(F(""));
 }
 
 void active_mode_screen()
