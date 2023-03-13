@@ -123,58 +123,41 @@ void select_button(int selected_button)
     menu.prinheu();
     arrayofButton[0].type = 0;
     action = menu.forward();
+    Serial.println(F("Forward"));
     break;
   case 5: // up
     menu.prinheu();
     arrayofButton[0].type = 1;
+    Serial.println(F("Upward"));
     action = menu.up();
     break;
   case 7: // left
     menu.prinheu();
     arrayofButton[0].type = 2;
+    Serial.println(F("Backward"));
     action = menu.backward();
+
     break;
   case 8: // down
     menu.prinheu();
     arrayofButton[0].type = 3;
+    Serial.println(F("Downward"));
     action = menu.down();
     break;
   }
 
   switch (arrayofButton[0].getSelection())
   {
-  case 1: //+
+  case 1: // +
     menu.prinheu();
     arrayofButton[1].type = 0;
     menu.updateValue(1);
-    // switch (selected_screen)
-    //{
-    // case 3:
-    // case 4:
-    // case 9:
-    //   break;
-    // case 10:
-    //   init_ev_state();
-    //   break;
-    // case 8:
-    //   init_ev_state();
-    //   selected_screen = 0;
-    //  break;
-    // default:
-    //  selected_screen = 2;
-    //  break;
-    //}
+
     break;
-  case 2: //-
+  case 2: // -
     menu.prinheu();
     arrayofButton[1].type = 1;
     menu.updateValue(1);
-    // if (selected_screen == 0)
-    //{
-    //   subScreen_selected = 0;
-    //   selected_line_on_screen = 0;
-    //   selected_parameter = 0;
-    // }
     break;
   case 3: // b4
     menu.prinheu();
@@ -286,45 +269,53 @@ void reset_button()
 
 void print_screen()
 {
-  switch (menu.actualScreen)
+  if (menu.action == 0)
   {
-  case 0:
-    main_screen();
-    print_active_ev();
-    break;
-  case 1:
-    parameter_screen();
-    break;
-  case 2:
-    output_screen();
-    break;
-  case 3:
-    auto_mode_screen();
-    break;
-  case 4:
-    buttons_parameter_screen();
-    break;
-  case 5:
-    clock_parameter_screen();
-    break;
-  case 6:
-    other_parameter_screen();
-    break;
-  case 7:
-    manual_mode_screen();
-    break;
-  case 8:
-    active_mode_screen();
-    break;
-  case 9:
-    delay_screen();
-    break;
-  case 10:
-    stop_screen();
-    break;
-  default:
-    main_screen();
-    break;
+    draw_cursor();
+  }
+  else if (menu.action == 1)
+  {
+    switch (menu.actualScreen)
+    {
+    case 0:
+      main_screen();
+      print_active_ev();
+      break;
+    case 1:
+      parameter_screen();
+      break;
+    case 2:
+      output_screen();
+      break;
+    case 3:
+      auto_mode_screen();
+      break;
+    case 4:
+      buttons_parameter_screen();
+      break;
+    case 5:
+      clock_parameter_screen();
+      break;
+    case 6:
+      other_parameter_screen();
+      break;
+    case 7:
+      manual_mode_screen();
+      break;
+    case 8:
+      active_mode_screen();
+      break;
+    case 9:
+      delay_screen();
+      break;
+    case 10:
+      stop_screen();
+      break;
+    default:
+      main_screen();
+      break;
+    }
+    draw_cursor();
   }
 }
 
@@ -753,10 +744,10 @@ void stop_screen()
 }
 
 /*int line 11 22 33 44 55*/
-void draw_cursor(int line)
+void draw_cursor()
 {
   int x = 0;
-  int y = line;
+  int y = menu.actualLine * 11;
   int length = 4;
   int height = 11;
   u8g.drawBox(x, y, length, height);

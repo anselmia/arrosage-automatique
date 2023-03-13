@@ -15,6 +15,7 @@ MENU::MENU()
     actualLine = 0;
     cursorPos = 0;
     selectedEV = 0;
+    action = -1;
     items[0] = M_ITEM(0, -1, 1, 0, -1);
     items[1] = M_ITEM(0, -1, 2, 1, -1);
     items[2] = M_ITEM(0, -1, 3, 2, -1);
@@ -41,7 +42,7 @@ MENU::MENU()
     items[23] = M_ITEM(4, 1, -1, 3, 172, 20);
     items[24] = M_ITEM(4, 1, -1, 4, 173, 20);
     items[25] = M_ITEM(5, 1, -1, 1, 0);
-    items[26] = M_ITEM(5, 1, -1, 2, 0);
+    items[26] = M_ITEM(5, 1, -1, 3, 0);
     items[27] = M_ITEM(6, 1, -1, 1, 160, 1);
     items[28] = M_ITEM(6, 1, -1, 2, 161, 35);
     items[29] = M_ITEM(6, 1, -1, 3, 162, 20);
@@ -54,6 +55,7 @@ MENU::MENU()
     items[36] = M_ITEM(9, 0, -1, 1, 17);
     items[37] = M_ITEM(9, 0, -1, 2, 0, 14);
     items[38] = M_ITEM(10, 0, -1, 1, 0);
+    items[39] = M_ITEM(11, -1, -2, 0, -1);
 }
 
 void MENU::initClock()
@@ -82,8 +84,7 @@ void MENU::prinheu2()
     prinheu();
 }
 
-// set line
-int MENU::forward()
+void MENU::forward()
 {
     if (actualScreen == 5)
     {
@@ -93,7 +94,7 @@ int MENU::forward()
     {
         cursorPos = 0;
     }
-    int action = -1;
+    action = -1;
     int newScreen = -1;
     int newLine = -1;
     for (int i = 0; i <= sizeof(items); i++)
@@ -121,19 +122,11 @@ int MENU::forward()
         actualLine = newLine;
         action = 1;
     }
-    switch (actualScreen)
-    {
-    case 5:
-        actualLine = 1;
-        break;
-    }
-    return action;
 }
 
-// set line
-int MENU::backward()
+void MENU::backward()
 {
-    int action = -1;
+    action = -1;
     int newScreen = -1;
     int newLine = -1;
     for (int i = 0; i <= sizeof(items); i++)
@@ -155,18 +148,17 @@ int MENU::backward()
             }
         }
     }
-    if (newScreen != -1)
+    if (newScreen >= -1)
     {
         actualScreen = newScreen;
         actualLine = newLine;
         action = 1;
     }
-    return action;
 }
 
-int MENU::up()
+void MENU::up()
 {
-    int action = -1;
+    action = -1;
     int lines[8];
     int minLine = 9;
     int maxLine = -1;
@@ -193,7 +185,13 @@ int MENU::up()
 
     if (actualLine > minLine)
     {
-        actualLine--;
+        for (int i = sizeof(lines) - 1; i >= 0; i--)
+        {
+            if (lines[i] < actualLine)
+            {
+                actualLine = lines[i];
+            }
+        }
         action = 0;
         if (actualLine == 4)
         {
@@ -209,9 +207,9 @@ int MENU::up()
     return action;
 }
 
-int MENU::down()
+void MENU::down()
 {
-    int action = -1;
+    action = -1;
     int lines[8];
     int minLine = 9;
     int maxLine = -1;
@@ -238,7 +236,13 @@ int MENU::down()
 
     if (actualLine < maxLine)
     {
-        actualLine++;
+        for (int i = 0; i < sizeof(lines); i++)
+        {
+            if (lines[i] < actualLine)
+            {
+                actualLine = lines[i];
+            }
+        }
         action = 0;
         if (actualLine == 5)
         {
@@ -250,11 +254,9 @@ int MENU::down()
         actualLine = minLine;
         action = 1;
     }
-
-    return action;
 }
 
-int MENU::updateValue(int dir)
+void MENU::updateValue(int dir)
 {
     int mem_adress;
     M_ITEM item = getItem();
