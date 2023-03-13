@@ -72,7 +72,6 @@ MENU menu = MENU();
 boolean aar = true; // mode wire endtransmission
 int module_state[3];
 int manual_mode_state = 0;
-int manual_selected_ev = 0;
 int manual_time_on = 0;
 char buf[10];
 
@@ -122,21 +121,25 @@ void select_button(int selected_button)
   case 1: // right
     menu.prinheu();
     arrayofButton[0].type = 0;
+    Serial.println(F("Forward")); // to remove after test
     action = menu.forward();
     break;
   case 5: // up
     menu.prinheu();
     arrayofButton[0].type = 1;
+    Serial.println(F("up")); // to remove after test
     action = menu.up();
     break;
   case 7: // left
     menu.prinheu();
     arrayofButton[0].type = 2;
+    Serial.println(F("backard")); // to remove after test
     action = menu.backward();
     break;
   case 8: // down
     menu.prinheu();
     arrayofButton[0].type = 3;
+    Serial.println(F("down")); // to remove after test
     action = menu.down();
     break;
   }
@@ -290,7 +293,6 @@ void print_screen()
   {
   case 0:
     main_screen();
-    print_active_ev();
     break;
   case 1:
     parameter_screen();
@@ -337,18 +339,18 @@ void inii2c(int adr)
 void print_actual_time()
 {
   Serial.println(F(" Heure "));
-  Serial.print(menu.rtc[4]);
-  Serial.print(F("/"));
-  Serial.print(menu.rtc[5]);
-  Serial.print(F("/"));
-  Serial.print(menu.rtc[6]);
-  Serial.println(F(""));
-  Serial.print(menu.rtc[2]);
-  Serial.print(F(":"));
-  Serial.print(menu.rtc[1]);
-  Serial.print(F(":"));
-  Serial.print(menu.rtc[0]);
-  Serial.println(F(""));
+  // Serial.print(menu.rtc[4]);
+  // Serial.print(F("/"));
+  // Serial.print(menu.rtc[5]);
+  // Serial.print(F("/"));
+  // Serial.print(menu.rtc[6]);
+  // Serial.println(F(""));
+  // Serial.print(menu.rtc[2]);
+  // Serial.print(F(":"));
+  // Serial.print(menu.rtc[1]);
+  // Serial.print(F(":"));
+  // Serial.print(menu.rtc[0]);
+  // Serial.println(F(""));
   u8g.drawStr(10, 11, " Heure ");
   print_on_screen(7, 22, menu.rtc[4]);
   u8g.drawStr(20, 22, "/");
@@ -391,6 +393,7 @@ void Init()
   {
     u8g.setFont(u8g_font_tpss);           // Utilise la police de caractÃ¨re standard
     u8g.drawStr(5, 11, "Initialisation"); // 12 line
+    Serial.println(F("Initialisation"));
     if (module_state[1] == 0)
     {
       menu.getClock();
@@ -399,9 +402,13 @@ void Init()
     else
     {
       u8g.drawStr(10, 22, "erreur horloge");
+      Serial.println(F("Initialisation"));
     }
     u8g.drawStr(5, 44, "version");
+    Serial.print(F("Version : "));
     print_on_screen(50, 44, versio);
+    Serial.print(versio);
+    Serial.println("");
   } while (u8g.nextPage());
 
   delay(2000);
@@ -419,6 +426,7 @@ void main_screen()
   {
     print_actual_time();
   }
+  print_active_ev();
 }
 
 void parameter_screen()
@@ -716,40 +724,65 @@ void active_mode_screen()
   {
     u8g.drawStr(2, 11, "activation des sorties :");
     u8g.drawStr(6, 22, "mode automatique :");
+    Serial.println(F("activation des sorties :"));
+    Serial.println(F("mode automatique :"));
     for (int i = 0; i < 8; i++)
     {
       if (eeprom.Read(mem_address[2][i] == 1))
       {
         print_on_screen(2 + (16 * i), 33, i + 1);
+        Serial.print(i + 1);
+        Serial.print(F("  "));
       }
     }
+    Serial.println(F(""));
     u8g.drawStr(6, 44, "sorties actives :");
+    Serial.println(F("mode automatique :"));
     for (int i = 0; i < 8; i++)
     {
       if (eeprom.Read(mem_address[4][i] == 1))
       {
         print_on_screen(2 + (16 * i), 56, i + 1);
+        Serial.print(i + 1);
+        Serial.print(F("  "));
       }
     }
+    Serial.println(F(""));
   }
 }
 
 void delay_screen()
 {
-  sprintf(buf, "%d", manual_selected_ev);
+  sprintf(buf, "%d", menu.selectedEV);
   u8g.drawStr(70, 22, buf);
-  u8g.drawStr(10, 11, " arret ");
-  u8g.drawStr(5, 22, " sortie n :");
-
+  u8g.drawStr(10, 11, " Delais ");
+  u8g.drawStr(5, 22, " sortie N) :");
+  Serial.println(F("Delais :"));
+  Serial.print(F("sortie N° :"));
+  Serial.print(menu.selectedEV);
+  Serial.println(F(""));
   if (arrayofButton[1].type == 0)
   {
     arrayofButton[1].type = -1;
-    arrayOfEV[manual_selected_ev - 1].remainingTimeOn = 0;
+    arrayOfEV[menu.selectedEV - 1].remainingTimeOn = 0;
   }
 }
 
 void stop_screen()
 {
+  sprintf(buf, "%d", menu.selectedEV);
+  u8g.drawStr(70, 22, buf);
+  u8g.drawStr(10, 11, " Delais ");
+  u8g.drawStr(5, 22, " sortie N) :");
+  Serial.println(F("Delais :"));
+  Serial.print(F("sortie N° :"));
+  Serial.print(menu.selectedEV);
+  Serial.println(F(""));
+  if (arrayofButton[1].type == 0)
+  {
+    arrayofButton[1].type = -1;
+    arrayOfEV[menu.selectedEV - 1].remainingTimeOn = 0;
+  }
 }
 
 /*int line 11 22 33 44 55*/
@@ -1007,7 +1040,7 @@ void manual_activation_screen()
   int mem_value;
   if (arrayofButton[2].type != -1)
   {
-    manual_selected_ev = arrayofButton[2].type + 1;
+    menu.selectedEV = arrayofButton[2].type + 1;
     arrayofButton[2].type = -1;
   }
   if (arrayofButton[0].type == 2)
@@ -1041,7 +1074,7 @@ void manual_activation_screen()
   {
     manual_time_on = manual_time_on - max_time_on_ev;
   }
-  sprintf(buf, "%d", manual_selected_ev);
+  sprintf(buf, "%d", menu.selectedEV);
   u8g.drawStr(70, 22, buf);
   sprintf(buf, "%d", manual_time_on);
   u8g.drawStr(60, 33, buf);
@@ -1052,10 +1085,10 @@ void manual_activation_screen()
   if (arrayofButton[1].type == 0)
   {
     arrayofButton[1].type = -1;
-    arrayOfEV[manual_selected_ev - 1].remainingTimeOn = manual_time_on;
+    arrayOfEV[menu.selectedEV - 1].remainingTimeOn = manual_time_on;
 
     manual_time_on = 0;
-    manual_selected_ev = 1;
+    menu.selectedEV = 1;
   }
 }
 

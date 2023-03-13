@@ -13,6 +13,8 @@ BUTTON::BUTTON(int pin)
 int BUTTON::readButton()
 {
     int selectedButton = (analogRead(buttonPin) + 190) / 128;
+    selectedButton = Serial.read();           // to remove after test
+    Serial.println(selectedButton);           // to remove after test
     int newButtonSelection = buttonSelection; /* Ã  priori rien ne change */
     switch (buttonState)
     {
