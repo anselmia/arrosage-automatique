@@ -303,6 +303,31 @@ void MENU::updateValue(int dir)
         }
         break;
     case 5:
+        switch (actualLine)
+        {
+        case 1:
+            mem_adress = 170;
+            mem_value = eeprom.Read(mem_adress);
+            max_value = 20;
+            break;
+        case 2:
+            mem_adress = 171;
+            mem_value = eeprom.Read(mem_adress);
+            max_value = 20;
+            break;
+        case 3:
+            mem_adress = 172;
+            mem_value = eeprom.Read(mem_adress);
+            max_value = 20;
+            break;
+        case 4:
+            mem_adress = 173;
+            mem_value = eeprom.Read(mem_adress);
+            max_value = 20;
+            break;
+        }
+        break;
+    case 6:
         int rtc[7];
         RTC.get(rtc, true);
         switch (actualLine)
@@ -480,23 +505,26 @@ void MENU::updateValue(int dir)
         break;
     }
 
-    if (dir == 1)
+    if (actualScreen != 6)
     {
-        mem_value++;
-        if (mem_value > max_value)
+        if (dir == 1)
         {
-            mem_value = 0;
+            mem_value++;
+            if (mem_value > max_value)
+            {
+                mem_value = 0;
+            }
+            eeprom.write(mem_adress, mem_value);
         }
-        eeprom.write(mem_adress, mem_value);
-    }
-    if (dir == 0 and actualScreen != 5)
-    {
-        mem_value--;
-        if (mem_value < 0)
+        if (dir == 0)
         {
-            mem_value = max_value;
+            mem_value--;
+            if (mem_value < 0)
+            {
+                mem_value = max_value;
+            }
+            eeprom.write(mem_adress, mem_value);
         }
-        eeprom.write(mem_adress, mem_value);
     }
 }
 
