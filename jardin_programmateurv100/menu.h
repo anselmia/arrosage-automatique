@@ -1,7 +1,6 @@
 #ifndef MENU_h
 #define MENU_h
 
-#include "m_item.h"
 #include "myeeprom.h"
 
 class MENU

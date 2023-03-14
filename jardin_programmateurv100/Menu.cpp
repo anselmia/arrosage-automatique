@@ -1,5 +1,4 @@
 #include "menu.h"
-#include "m_item.h"
 #include "myeeprom.h"
 #include <DS1307.h>
 
@@ -50,14 +49,11 @@ void MENU::forward()
     switch (actualScreen)
     {
     case 0:
-        previousScreen = actualScreen;
         actualScreen = 1;
         actualLine = 0;
         action = 1;
         break;
     case 1:
-        previousScreen = actualScreen;
-        previousLine = actualLine;
         switch (actualLine)
         {
         case 0:
@@ -92,7 +88,6 @@ void MENU::forward()
         }
         break;
     case 2:
-        previousScreen = actualScreen;
         switch (actualLine)
         {
         case 1:
