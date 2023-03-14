@@ -15,47 +15,7 @@ MENU::MENU()
     actualLine = 0;
     cursorPos = 0;
     selectedEV = 0;
-    action = -1;
-    items[0] = M_ITEM(0, -1, 1, 0, -1);
-    items[1] = M_ITEM(0, -1, 2, 1, -1);
-    items[2] = M_ITEM(0, -1, 3, 2, -1);
-    items[3] = M_ITEM(0, -1, 4, 3, -1);
-    items[4] = M_ITEM(0, -1, 6, 4, -1);
-    items[5] = M_ITEM(1, 0, 7, 1, -1);
-    items[6] = M_ITEM(1, 0, 8, 2, -1);
-    items[7] = M_ITEM(1, 0, 9, 3, -1);
-    items[8] = M_ITEM(1, 0, 10, 4, -1);
-    items[9] = M_ITEM(2, 1, 3, 1, -1);
-    items[10] = M_ITEM(2, 1, 3, 2, -1);
-    items[11] = M_ITEM(2, 1, 3, 3, -1);
-    items[12] = M_ITEM(2, 1, 3, 4, -1);
-    items[13] = M_ITEM(2, 1, 3, 5, -1);
-    items[14] = M_ITEM(2, 1, 3, 6, -1);
-    items[15] = M_ITEM(2, 1, 3, 7, -1);
-    items[16] = M_ITEM(2, 1, 3, 8, -1);
-    items[17] = M_ITEM(3, 2, -1, 1, 12, 1);
-    items[18] = M_ITEM(3, 2, -1, 2, 10, 20);
-    items[19] = M_ITEM(3, 2, -1, 3, 11, 14);
-    items[20] = M_ITEM(3, 2, -1, 4, 13, 23);
-    items[21] = M_ITEM(4, 1, -1, 1, 170, 20);
-    items[22] = M_ITEM(4, 1, -1, 2, 171, 20);
-    items[23] = M_ITEM(4, 1, -1, 3, 172, 20);
-    items[24] = M_ITEM(4, 1, -1, 4, 173, 20);
-    items[25] = M_ITEM(5, 1, -1, 1, 0);
-    items[26] = M_ITEM(5, 1, -1, 3, 0);
-    items[27] = M_ITEM(6, 1, -1, 1, 160, 1);
-    items[28] = M_ITEM(6, 1, -1, 2, 161, 35);
-    items[29] = M_ITEM(6, 1, -1, 3, 162, 20);
-    items[30] = M_ITEM(6, 1, -1, 4, 163, 14);
-    items[31] = M_ITEM(6, 1, -1, 1, 164, 20);
-    items[32] = M_ITEM(6, 1, -1, 2, 162, 14);
-    items[33] = M_ITEM(7, 0, -1, 1, -1);
-    items[34] = M_ITEM(7, 0, -1, 2, 0, 20);
-    items[35] = M_ITEM(8, 0, -1, 1, 0);
-    items[36] = M_ITEM(9, 0, -1, 1, 17);
-    items[37] = M_ITEM(9, 0, -1, 2, 0, 14);
-    items[38] = M_ITEM(10, 0, -1, 1, 0);
-    items[39] = M_ITEM(11, -1, -2, 0, -1);
+    action = 1;
 }
 
 void MENU::initClock()
@@ -86,221 +46,263 @@ void MENU::prinheu2()
 
 void MENU::forward()
 {
-    if (actualScreen == 5)
-    {
-        moveCursor();
-    }
-    else
-    {
-        cursorPos = 0;
-    }
     action = -1;
-    int newScreen = -1;
-    int newLine = -1;
-    for (int i = 0; i <= sizeof(items); i++)
+    switch (actualScreen)
     {
-        if (items[i].actualScreen == actualScreen)
-        {
-            if (items[i].line == actualLine)
-            {
-                newScreen = items[i].nextScreen;
-                for (int j = 0; j <= sizeof(items); j++)
-                {
-                    if (items[j].actualScreen == newScreen)
-                    {
-                        newLine = items[j].line;
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-    }
-    if (newScreen != -1)
-    {
-        actualScreen = newScreen;
-        actualLine = newLine;
+    case 0:
+        previousScreen = actualScreen;
+        actualScreen = 1;
+        actualLine = 0;
         action = 1;
+        break;
+    case 1:
+        previousScreen = actualScreen;
+        previousLine = actualLine;
+        switch (actualLine)
+        {
+        case 0:
+            actualScreen = 2;
+            actualLine = 1;
+            action = 1;
+            break;
+        case 1:
+            actualScreen = 8;
+            actualLine = 2;
+            selectedEV = 1;
+            action = 1;
+            break;
+        case 2:
+            actualScreen = 9;
+            selectedEV = 1;
+            actualLine = 2;
+            action = 1;
+            break;
+        case 3:
+            actualScreen = 10;
+            selectedEV = 1;
+            actualLine = 2;
+            action = 1;
+            break;
+        case 4:
+            actualScreen = 11;
+            selectedEV = 1;
+            actualLine = 2;
+            action = 1;
+            break;
+        }
+        break;
+    case 2:
+        previousScreen = actualScreen;
+        switch (actualLine)
+        {
+        case 1:
+            actualScreen = 4;
+            actualLine = 1;
+            action = 1;
+            break;
+        case 2:
+            actualScreen = 5;
+            actualLine = 1;
+            action = 1;
+            break;
+        case 3:
+            cursorPos = 0;
+            actualScreen = 6;
+            actualLine = 1;
+            action = 1;
+            break;
+        case 4:
+            actualScreen = 7;
+            actualLine = 1;
+            action = 1;
+            break;
+        }
+        break;
+    case 6:
+        moveCursor();
+        action = 0;
+        break;
     }
 }
 
 void MENU::backward()
 {
     action = -1;
-    int newScreen = -1;
-    int newLine = -1;
-    for (int i = 0; i <= sizeof(items); i++)
+    switch (actualScreen)
     {
-        if (items[i].actualScreen == actualScreen)
-        {
-            if (items[i].line == actualLine)
-            {
-                newScreen = items[i].previousScreen;
-                for (int j = 0; j <= sizeof(items); j++)
-                {
-                    if (items[j].actualScreen == newScreen)
-                    {
-                        newLine = items[j].line;
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-    }
-    if (newScreen >= -1)
-    {
-        actualScreen = newScreen;
-        actualLine = newLine;
+    case 1:
+        actualScreen = 0;
+        actualLine = 0;
         action = 1;
+        break;
+    case 2:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+        actualScreen = 1;
+        actualLine = 1;
+        action = 1;
+        break;
+
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+        actualScreen = 2;
+        actualLine = 1;
+        action = 1;
+        break;
     }
 }
 
 void MENU::up()
 {
     action = -1;
-    int lines[8];
-    int minLine = 9;
-    int maxLine = -1;
-    int newScreen = -1;
-    int newLine = actualLine - 1;
-    int lineCount = 0;
-    cursorPos = 0;
-    for (int i = 0; i <= sizeof(items); i++)
+    switch (actualScreen)
     {
-        if (items[i].actualScreen == actualScreen)
-        {
-            lines[lineCount] = items[i].line;
-            if (items[i].line < minLine)
-            {
-                minLine = items[i].line;
-            }
-            if (items[i].line > maxLine)
-            {
-                maxLine = items[i].line;
-            }
-            lineCount++;
-        }
-    }
-
-    if (actualLine > minLine)
-    {
-        for (int i = sizeof(lines) - 1; i >= 0; i--)
-        {
-            if (lines[i] < actualLine)
-            {
-                actualLine = lines[i];
-            }
-        }
+    case 1:
         action = 0;
-        if (actualLine == 4)
+        if (actualLine == 0)
+            actualLine = 4;
+        else
+            actualLine--;
+        break;
+    case 2:
+    case 4:
+    case 5:
+        action = 0;
+        if (actualLine == 1)
+            actualLine = 4;
+        else
+            actualLine--;
+        break;
+    case 6:
+        action = 0;
+        if (actualLine == 1)
+            actualLine = 3;
+        else
+            actualLine = 1;
+        cursorPos = 0;
+        break;
+    case 7:
+        if (actualLine == 1)
         {
+            actualLine = 7;
             action = 1;
         }
+        else if (actualLine == 6)
+        {
+            actualLine--;
+            action = 1;
+        }
+        else
+        {
+            actualLine--;
+            action = 0;
+        }
+        break;
     }
-    else
-    {
-        actualLine = maxLine;
-        action = 1;
-    }
-
-    return action;
 }
 
 void MENU::down()
 {
     action = -1;
-    int lines[8];
-    int minLine = 9;
-    int maxLine = -1;
-    int newScreen = -1;
-    int newLine = actualLine - 1;
-    int lineCount = 0;
-    cursorPos = 0;
-    for (int i = 0; i <= sizeof(items); i++)
+    switch (actualScreen)
     {
-        if (items[i].actualScreen == actualScreen)
-        {
-            lines[lineCount] = items[i].line;
-            if (items[i].line < minLine)
-            {
-                minLine = items[i].line;
-            }
-            if (items[i].line > maxLine)
-            {
-                maxLine = items[i].line;
-            }
-            lineCount++;
-        }
-    }
-
-    if (actualLine < maxLine)
-    {
-        for (int i = 0; i < sizeof(lines); i++)
-        {
-            if (lines[i] < actualLine)
-            {
-                actualLine = lines[i];
-            }
-        }
+    case 1:
         action = 0;
-        if (actualLine == 5)
+        if (actualLine == 4)
+            actualLine = 0;
+        else
+            actualLine++;
+        break;
+    case 2:
+    case 4:
+    case 5:
+        action = 0;
+        if (actualLine == 4)
+            actualLine = 1;
+        else
+            actualLine++;
+        break;
+    case 6:
+        action = 0;
+        if (actualLine == 1)
+            actualLine = 3;
+        else
+            actualLine = 1;
+        cursorPos = 0;
+        break;
+    case 7:
+        if (actualLine == 7)
         {
+            actualLine = 1;
             action = 1;
         }
+        else if (actualLine == 4)
+        {
+            actualLine++;
+            action = 1;
+        }
+        else
+        {
+            actualLine++;
+            action = 0;
+        }
+        break;
     }
-    else
+}
+
+void MENU::selectEV(int ev)
+{
+    selectedEV = ev;
+    switch (actualScreen)
     {
-        actualLine = minLine;
+    case 4:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
         action = 1;
+        break;
     }
 }
 
 void MENU::updateValue(int dir)
 {
-    int mem_adress;
-    M_ITEM item = getItem();
-    if (item.memValue > 0)
+    action = -1;
+    int mem_value;
+    int max_value;
+    int mem_adress = -1;
+    switch (actualScreen)
     {
-        int mem_value;
-        if (selectedEV == 0)
+    case 4:
+        switch (actualLine)
         {
-            mem_adress = item.memValue;
+        case 1:
+            mem_adress = 12 + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
-        }
-        else
-        {
-            mem_adress = (item.memValue) + (10 * selectedEV);
+            max_value = 1;
+            break;
+        case 2:
+            mem_adress = 11 + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
-        }
-
-        if (dir == 1)
-        {
-            mem_value++;
-            if (mem_value > item.maxValue)
-            {
-                mem_value = 0;
-            }
-            eeprom.write(mem_adress, mem_value);
-        }
-        if (dir == 0)
-        {
+            max_value = 14;
+            break;
+        case 3:
+            mem_adress = 10 + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
-            if (mem_value <= 0)
-            {
-                mem_value = item.maxValue;
-            }
-            else
-            {
-                mem_value--;
-            }
-
-            eeprom.write(mem_adress, mem_value);
+            max_value = 20;
+            break;
+        case 4:
+            mem_adress = 13 + (10 * selectedEV);
+            mem_value = eeprom.Read(mem_adress);
+            max_value = 23;
+            break;
         }
-    }
-
-    if (actualScreen == 5)
-    {
+        break;
+    case 5:
         int rtc[7];
         RTC.get(rtc, true);
         switch (actualLine)
@@ -435,24 +437,67 @@ void MENU::updateValue(int dir)
                 break;
             }
         }
-    }
-}
-
-M_ITEM MENU::getItem()
-{
-    M_ITEM item;
-    for (int i = 0; i <= sizeof(items); i++)
-    {
-        if (items[i].actualScreen == actualScreen)
+        break;
+    case 7:
+        switch (actualLine)
         {
-            if (items[i].line == actualLine)
-            {
-                item = items[i];
-                break;
-            }
+        case 1:
+            mem_adress = 160;
+            mem_value = eeprom.Read(mem_adress);
+            max_value = 1;
+            break;
+        case 2:
+            mem_adress = 161;
+            mem_value = eeprom.Read(mem_adress);
+            max_value = 35;
+            break;
+        case 3:
+            mem_adress = 162;
+            mem_value = eeprom.Read(mem_adress);
+            max_value = 20;
+            break;
+        case 4:
+            mem_adress = 163;
+            mem_value = eeprom.Read(mem_adress);
+            max_value = 14;
+            break;
+        case 6:
+            mem_adress = 164;
+            mem_value = eeprom.Read(mem_adress);
+            max_value = 20;
+            break;
+        case 7:
+            mem_adress = 165;
+            mem_value = eeprom.Read(mem_adress);
+            max_value = 14;
+            break;
         }
+        break;
+    case 9:
+        mem_adress = 17 + (10 * selectedEV);
+        mem_value = eeprom.Read(mem_adress);
+        max_value = 1;
+        break;
     }
-    return item;
+
+    if (dir == 1)
+    {
+        mem_value++;
+        if (mem_value > max_value)
+        {
+            mem_value = 0;
+        }
+        eeprom.write(mem_adress, mem_value);
+    }
+    if (dir == 0 and actualScreen != 5)
+    {
+        mem_value--;
+        if (mem_value < 0)
+        {
+            mem_value = max_value;
+        }
+        eeprom.write(mem_adress, mem_value);
+    }
 }
 
 void MENU::moveCursor()
