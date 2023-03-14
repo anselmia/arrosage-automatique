@@ -17,6 +17,7 @@ public:
     int actualLine;
     int cursorPos;
     int action;
+    int screenValue;
     void initClock();
     void getClock();
     void prinheu();
@@ -30,5 +31,8 @@ public:
     void moveCursor();
     MYEEPROM eeprom = MYEEPROM();
     int selectedEV;
+    int delay;
+    int stop;
+    int inactive;
 };
 #endif
