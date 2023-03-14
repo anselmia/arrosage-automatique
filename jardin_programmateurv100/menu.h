@@ -17,8 +17,7 @@ public:
     int actualScreen;
     int actualLine;
     int cursorPos;
-    inaction;
-    M_ITEM items[39];
+    int action;
     void initClock();
     void getClock();
     void prinheu();
@@ -27,9 +26,9 @@ public:
     void backward();
     void up();
     void down();
+    void selectEV(int ev);
     void updateValue(int dir);
     void moveCursor();
-    M_ITEM getItem();
     MYEEPROM eeprom = MYEEPROM();
     int selectedEV;
 };

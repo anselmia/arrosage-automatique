@@ -34,8 +34,8 @@ int versio = 1.0;
     165 frequency winter
 7 : 170:173 manual time value from button 1 to 4
 */
-MYEEPROM eeprom = MYEEPROM();
 int mem_address[8][8] = {{20, 30, 40, 50, 60, 70, 80, 90}, {21, 31, 41, 51, 61, 71, 81, 91}, {22, 32, 42, 52, 62, 72, 82, 92}, {23, 33, 43, 53, 63, 73, 83, 93}, {27, 37, 47, 57, 67, 77, 87, 97}, {150, 151}, {160, 161, 162, 163, 164, 165}, {170, 171, 172, 173, 174}};
+MYEEPROM eeprom = MYEEPROM();
 EV arrayOfEV[8] = {EV(2), EV(3), EV(4), EV(5), EV(6), EV(7), EV(8), EV(9)};
 // SCREEN screen;
 // bouton
@@ -110,7 +110,26 @@ void init_ev_state()
   // Set all EV off
   send_to_module(addr_mod_relay, 102);
   for (int i = 0; i < 8; i++)
+  {
     arrayOfEV[i].remainingTimeOn = 0;
+    arrayOfEV[i].nextDayOn = 0;
+    Serial.println(i + 1);
+    Serial.println(arrayOfEV[i].remainingTimeOn);
+    Serial.println(arrayOfEV[i].nextDayOn);
+  }
+}
+
+void init_memory()
+{
+  Serial.println(F("Init mermory"));
+  for (int i = 0; i < sizeof(mem_address) / sizeof(mem_address[0]); i++)
+  {
+    for (int j = 0; j < sizeof(mem_address[0]) / sizeof(mem_address[0][0]); j++)
+    {
+      eeprom.write(mem_address[i][j], 0);
+      Serial.println(eeprom.Read(mem_address[i][j]));
+    }
+  }
 }
 
 void select_button(int selected_button)
@@ -122,39 +141,27 @@ void select_button(int selected_button)
     menu.prinheu();
     arrayofButton[0].type = 0;
     Serial.println(F("Forward")); // to remove after test
-    action = menu.forward();
+    menu.forward();
     Serial.println(F("Forward"));
     break;
   case 5: // up
     menu.prinheu();
     arrayofButton[0].type = 1;
-<<<<<<< HEAD
-    Serial.println(F("Upward"));
-=======
     Serial.println(F("up")); // to remove after test
->>>>>>> 8ee56ca08e98fb6c4fe42d8e08a90566417f66d6
-    action = menu.up();
+    menu.up();
     break;
   case 7: // left
     menu.prinheu();
     arrayofButton[0].type = 2;
-<<<<<<< HEAD
-    Serial.println(F("Backward"));
-=======
     Serial.println(F("backard")); // to remove after test
->>>>>>> 8ee56ca08e98fb6c4fe42d8e08a90566417f66d6
-    action = menu.backward();
+    menu.backward();
 
     break;
   case 8: // down
     menu.prinheu();
     arrayofButton[0].type = 3;
-<<<<<<< HEAD
     Serial.println(F("Downward"));
-=======
-    Serial.println(F("down")); // to remove after test
->>>>>>> 8ee56ca08e98fb6c4fe42d8e08a90566417f66d6
-    action = menu.down();
+    menu.down();
     break;
   }
 
@@ -193,30 +200,30 @@ void select_button(int selected_button)
   {
   case 1: // s7
     arrayofButton[2].type = 6;
-    menu.selectedEV = 7;
+    menu.selectEV(7);
     break;
   case 2: // s6
     arrayofButton[2].type = 5;
-    menu.selectedEV = 6;
+    menu.selectEV(6);
   case 3: // s5
     arrayofButton[2].type = 4;
-    menu.selectedEV = 5;
+    menu.selectEV(5);
     break;
   case 4: // s4
     arrayofButton[2].type = 3;
-    menu.selectedEV = 4;
+    menu.selectEV(4);
     break;
   case 5: // s3
     arrayofButton[2].type = 2;
-    menu.selectedEV = 3;
+    menu.selectEV(3);
     break;
   case 6: // s2
     arrayofButton[2].type = 1;
-    menu.selectedEV = 2;
+    menu.selectEV(2);
     break;
   case 7: // s1
     arrayofButton[2].type = 0;
-    menu.selectedEV = 1;
+    menu.selectEV(1);
     break;
   case 8:
     break;
@@ -235,6 +242,7 @@ void loop()
     case arrayofButton[i].EVENT_PRESSED:
       if (button_state == 0)
       {
+        Serial.println(F("Button Pressed"));
         select_button(arrayofButton[i].getSelection());
         button_state = 1;
       }
@@ -258,6 +266,7 @@ void loop()
   update_all_ev_state();
 
   // if ev not in active state reset remining time to 0
+  Serial.println(F("end of loop"));
   for (int i = 0; i < 8; i++)
   {
     if (eeprom.Read(mem_address[4][i]) == 0)
@@ -270,6 +279,9 @@ void loop()
   }
 
   reset_button();
+  unsigned long seconds = 1000L; // Notice the L
+  unsigned long minutes = seconds * 60;
+  delay(minutes); // to remove
 }
 
 void reset_button()
@@ -283,7 +295,6 @@ void print_screen()
 {
   if (menu.action == 0)
   {
-<<<<<<< HEAD
     draw_cursor();
   }
   else if (menu.action == 1)
@@ -292,7 +303,6 @@ void print_screen()
     {
     case 0:
       main_screen();
-      print_active_ev();
       break;
     case 1:
       parameter_screen();
@@ -328,45 +338,6 @@ void print_screen()
       main_screen();
       break;
     }
-    draw_cursor();
-=======
-  case 0:
-    main_screen();
-    break;
-  case 1:
-    parameter_screen();
-    break;
-  case 2:
-    output_screen();
-    break;
-  case 3:
-    auto_mode_screen();
-    break;
-  case 4:
-    buttons_parameter_screen();
-    break;
-  case 5:
-    clock_parameter_screen();
-    break;
-  case 6:
-    other_parameter_screen();
-    break;
-  case 7:
-    manual_mode_screen();
-    break;
-  case 8:
-    active_mode_screen();
-    break;
-  case 9:
-    delay_screen();
-    break;
-  case 10:
-    stop_screen();
-    break;
-  default:
-    main_screen();
-    break;
->>>>>>> 8ee56ca08e98fb6c4fe42d8e08a90566417f66d6
   }
 }
 
@@ -427,6 +398,7 @@ void Init()
   }
 
   init_ev_state();
+  init_memory();
 
   u8g.firstPage(); // SÃ©lectionne la 1er page mÃ©moire de l'Ã©cran
   do
@@ -442,7 +414,7 @@ void Init()
     else
     {
       u8g.drawStr(10, 22, "erreur horloge");
-      Serial.println(F("Initialisation"));
+      Serial.println(F("erreur horloge"));
     }
     u8g.drawStr(5, 44, "version");
     Serial.print(F("Version : "));
@@ -450,8 +422,6 @@ void Init()
     Serial.print(versio);
     Serial.println("");
   } while (u8g.nextPage());
-
-  delay(2000);
 }
 
 void main_screen()
@@ -570,15 +540,6 @@ void output_screen()
     Serial.print(arrayOfEV[7].nextDayOn);
     Serial.println(F(""));
     break;
-  }
-
-  if (menu.actualLine < 5)
-  {
-    draw_cursor((menu.actualLine + 1) * 11);
-  }
-  else
-  {
-    draw_cursor((menu.actualLine - 4) * 11);
   }
 }
 
@@ -748,6 +709,7 @@ void print_active_ev()
 {
   for (int i = 0; i < 8; i++)
   {
+    Serial.println(arrayOfEV[i].remainingTimeOn);
     if (arrayOfEV[i].remainingTimeOn != 0)
     {
       print_on_screen(2 + (16 * (i + 1)), 55, i + 1);
@@ -942,23 +904,28 @@ void update_auto_mode_with_ath21()
 
 void loop_actualization()
 {
-  if (menu.rtc_min != menu.rtc[1])
+  // if (menu.rtc_min != menu.rtc[1])
+  //{
+  //  check remainining time for ev on
+  for (int i = 0; i < 8; i++)
   {
-    // check remainining time for ev on
-    for (int i = 0; i < 8; i++)
+    if (arrayOfEV[i].remainingTimeOn != 0)
     {
-      if (arrayOfEV[i].remainingTimeOn != 0)
-      {
-        arrayOfEV[i].remainingTimeOn--;
+      arrayOfEV[i].remainingTimeOn--;
 
-        if (arrayOfEV[i].remainingTimeOn <= 0)
-        {
-          arrayOfEV[i].remainingTimeOn = 0;
-        }
+      if (arrayOfEV[i].remainingTimeOn < 0)
+      {
+        Serial.println(F("set to 0 remaning time"));
+        arrayOfEV[i].remainingTimeOn = 0;
       }
     }
-    menu.rtc_min = menu.rtc[1];
+    Serial.println(i + 1);
+    Serial.print(F("remaining time on : "));
+    Serial.print(arrayOfEV[i].remainingTimeOn);
+    Serial.println(F(""));
   }
+  menu.rtc_min = menu.rtc[1];
+  //}
 
   if (manual_mode_state == 0)
   {
@@ -984,14 +951,16 @@ void horlact()
 {
   for (int i = 0; i < 8; i++)
   {
-    int time_on;
-
+    int time_on = 0;
+    Serial.println(eeprom.Read(mem_address[2][i]));
     // if mode auto on
     if (eeprom.Read(mem_address[2][i]) == 1)
     {
       // if ev state is on
+      Serial.println(eeprom.Read(mem_address[4][i]));
       if (eeprom.Read(mem_address[4][i]) == 1)
       {
+        Serial.println(eeprom.Read(mem_address[3][i]));
         // if clock h == auto start time
         if (menu.rtc[2] == eeprom.Read(mem_address[3][i]))
         {
@@ -1015,7 +984,10 @@ void horlact()
               {
                 time_on = max_time_on_ev;
               }
+
               arrayOfEV[i].remainingTimeOn = time_on;
+              Serial.println(F("Next day calc i should not"));
+              delay(2000); // to remove
               calculate_next_day(i);
             }
           }
@@ -1030,6 +1002,14 @@ void horlact()
         }
       }
     }
+
+    Serial.println(i + 1);
+    Serial.print(F("remaining time on : "));
+    Serial.print(arrayOfEV[i].remainingTimeOn);
+    Serial.println(F(""));
+    Serial.print(F("next day on : "));
+    Serial.print(arrayOfEV[i].nextDayOn);
+    Serial.println(F(""));
   }
 }
 
