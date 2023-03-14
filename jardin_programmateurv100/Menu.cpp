@@ -10,11 +10,15 @@ MENU::MENU()
     int rtc_day = 0;
     int ecran_princ_min = 0;
     int ecran_princ_sec = 0;
+    int screenValue = 0;
     actualScreen = 0;
     actualLine = 0;
     cursorPos = 0;
     selectedEV = 0;
     action = 1;
+    delay = 0;
+    stop = 0;
+    inactive = 0;
 }
 
 void MENU::initClock()
@@ -46,6 +50,7 @@ void MENU::prinheu2()
 void MENU::forward()
 {
     action = -1;
+    screenValue = 0;
     switch (actualScreen)
     {
     case 0:
@@ -96,17 +101,12 @@ void MENU::forward()
             action = 1;
             break;
         case 2:
-            actualScreen = 5;
-            actualLine = 1;
-            action = 1;
-            break;
-        case 3:
             cursorPos = 0;
             actualScreen = 6;
             actualLine = 1;
             action = 1;
             break;
-        case 4:
+        case 3:
             actualScreen = 7;
             actualLine = 1;
             action = 1;
@@ -116,6 +116,12 @@ void MENU::forward()
     case 6:
         moveCursor();
         action = 0;
+        break;
+    case 10:
+        delay = 1;
+        break;
+    case 11:
+        stop = 1;
         break;
     }
 }
@@ -135,15 +141,17 @@ void MENU::backward()
     case 9:
     case 10:
     case 11:
+        selectedEV = 0;
         actualScreen = 1;
         actualLine = 1;
         action = 1;
+        screenValue = 0;
         break;
 
     case 4:
-    case 5:
     case 6:
     case 7:
+        selectedEV = 0;
         actualScreen = 2;
         actualLine = 1;
         action = 1;
@@ -164,8 +172,13 @@ void MENU::up()
             actualLine--;
         break;
     case 2:
+        action = 0;
+        if (actualLine == 1)
+            actualLine = 3;
+        else
+            actualLine--;
+        break;
     case 4:
-    case 5:
         action = 0;
         if (actualLine == 1)
             actualLine = 4;
@@ -213,8 +226,13 @@ void MENU::down()
             actualLine++;
         break;
     case 2:
+        action = 0;
+        if (actualLine == 3)
+            actualLine = 1;
+        else
+            actualLine++;
+        break;
     case 4:
-    case 5:
         action = 0;
         if (actualLine == 4)
             actualLine = 1;
@@ -256,15 +274,18 @@ void MENU::selectEV(int ev)
     {
     case 4:
     case 8:
-    case 9:
     case 10:
     case 11:
+        if (eeprom.Read(17 + (10 * ev)) == 1)
+            action = 1;
+        break;
+    case 9:
         action = 1;
         break;
     }
 }
 
-void MENU::updateValue(int dir)
+void MENU::updateValue(int dir, int value = 0)
 {
     action = -1;
     int mem_value;
@@ -294,31 +315,6 @@ void MENU::updateValue(int dir)
             mem_adress = 13 + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
             max_value = 23;
-            break;
-        }
-        break;
-    case 5:
-        switch (actualLine)
-        {
-        case 1:
-            mem_adress = 170;
-            mem_value = eeprom.Read(mem_adress);
-            max_value = 20;
-            break;
-        case 2:
-            mem_adress = 171;
-            mem_value = eeprom.Read(mem_adress);
-            max_value = 20;
-            break;
-        case 3:
-            mem_adress = 172;
-            mem_value = eeprom.Read(mem_adress);
-            max_value = 20;
-            break;
-        case 4:
-            mem_adress = 173;
-            mem_value = eeprom.Read(mem_adress);
-            max_value = 20;
             break;
         }
         break;
@@ -493,14 +489,30 @@ void MENU::updateValue(int dir)
             break;
         }
         break;
+    case 8:
+        screenValue += 5;
+        if (screenValue > 20)
+            screenValue = 0;
+        break;
     case 9:
         mem_adress = 17 + (10 * selectedEV);
         mem_value = eeprom.Read(mem_adress);
         max_value = 1;
         break;
+    case 10:
+        screenValue += 1;
+        if (screenValue > 14)
+            screenValue = 0;
+        break;
+    case 11:
+        if (screenValue == 0)
+            screenValue = 1;
+        else
+            screenValue = 0;
+        break;
     }
 
-    if (actualScreen != 6)
+    if (mem_adress != -1)
     {
         if (dir == 1)
         {
