@@ -27,7 +27,7 @@ public:
     void up();
     void down();
     void selectEV(int ev);
-    void updateValue(int dir);
+    void updateValue(int dir, int value = 0);
     void moveCursor();
     MYEEPROM eeprom = MYEEPROM();
     int selectedEV;

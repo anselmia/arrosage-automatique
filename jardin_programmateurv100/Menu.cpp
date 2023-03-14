@@ -14,7 +14,7 @@ MENU::MENU()
     actualScreen = 0;
     actualLine = 0;
     cursorPos = 0;
-    selectedEV = 0;
+    selectedEV = 1;
     action = 1;
     delay = 0;
     stop = 0;
@@ -97,6 +97,7 @@ void MENU::forward()
         {
         case 1:
             actualScreen = 4;
+            selectedEV = 1;
             actualLine = 1;
             action = 1;
             break;
@@ -143,7 +144,7 @@ void MENU::backward()
     case 11:
         selectedEV = 0;
         actualScreen = 1;
-        actualLine = 1;
+        actualLine = 0;
         action = 1;
         screenValue = 0;
         break;
@@ -255,7 +256,7 @@ void MENU::down()
         }
         else if (actualLine == 4)
         {
-            actualLine++;
+            actualLine = 6;
             action = 1;
         }
         else
@@ -300,21 +301,25 @@ void MENU::updateValue(int dir, int value = 0)
             mem_adress = 12 + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
             max_value = 1;
+            action = 1;
             break;
         case 2:
-            mem_adress = 11 + (10 * selectedEV);
-            mem_value = eeprom.Read(mem_adress);
-            max_value = 14;
-            break;
-        case 3:
             mem_adress = 10 + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
+            max_value = 14;
+            action = 1;
+            break;
+        case 3:
+            mem_adress = 11 + (10 * selectedEV);
+            mem_value = eeprom.Read(mem_adress);
             max_value = 20;
+            action = 1;
             break;
         case 4:
             mem_adress = 13 + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
             max_value = 23;
+            action = 1;
             break;
         }
         break;
@@ -461,31 +466,37 @@ void MENU::updateValue(int dir, int value = 0)
             mem_adress = 160;
             mem_value = eeprom.Read(mem_adress);
             max_value = 1;
+            action = 1;
             break;
         case 2:
             mem_adress = 161;
             mem_value = eeprom.Read(mem_adress);
             max_value = 35;
+            action = 1;
             break;
         case 3:
             mem_adress = 162;
             mem_value = eeprom.Read(mem_adress);
             max_value = 20;
+            action = 1;
             break;
         case 4:
             mem_adress = 163;
             mem_value = eeprom.Read(mem_adress);
             max_value = 14;
+            action = 1;
             break;
         case 6:
             mem_adress = 164;
             mem_value = eeprom.Read(mem_adress);
             max_value = 20;
+            action = 1;
             break;
         case 7:
             mem_adress = 165;
             mem_value = eeprom.Read(mem_adress);
             max_value = 14;
+            action = 1;
             break;
         }
         break;
@@ -493,22 +504,26 @@ void MENU::updateValue(int dir, int value = 0)
         screenValue += 5;
         if (screenValue > 20)
             screenValue = 0;
+        action = 1;
         break;
     case 9:
         mem_adress = 17 + (10 * selectedEV);
         mem_value = eeprom.Read(mem_adress);
         max_value = 1;
+        action = 1;
         break;
     case 10:
         screenValue += 1;
         if (screenValue > 14)
             screenValue = 0;
+        action = 1;
         break;
     case 11:
         if (screenValue == 0)
             screenValue = 1;
         else
             screenValue = 0;
+        action = 1;
         break;
     }
 

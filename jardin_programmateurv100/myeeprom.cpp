@@ -1,6 +1,6 @@
 #include "myeeprom.h"
 #include <EEPROM.h>
-
+#include "Arduino.h"
 MYEEPROM::MYEEPROM()
 {
 }
