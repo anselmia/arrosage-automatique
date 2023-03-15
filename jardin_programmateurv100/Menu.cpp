@@ -1,10 +1,12 @@
 #include "menu.h"
 #include "myeeprom.h"
 #include <DS1307.h>
+#include "clock.h";
 
 MENU::MENU()
 {
     MYEEPROM eeprom = MYEEPROM();
+    CLOCK clock = CLOCK();
     int rtc[7];
     int rtc_min = 0;
     int rtc_day = 0;
@@ -30,6 +32,7 @@ void MENU::initClock()
 void MENU::getClock()
 {
     RTC.get(rtc, true);
+    rtc = clock.updateTime(); // to remove when real clock
 }
 
 void MENU::prinheu()
@@ -202,7 +205,7 @@ void MENU::up()
         }
         else if (actualLine == 6)
         {
-            actualLine--;
+            actualLine = 4;
             action = 1;
         }
         else
@@ -324,8 +327,7 @@ void MENU::updateValue(int dir, int value = 0)
         }
         break;
     case 6:
-        int rtc[7];
-        RTC.get(rtc, true);
+        getClock();
         switch (actualLine)
         {
         case 1:
@@ -351,9 +353,11 @@ void MENU::updateValue(int dir, int value = 0)
                     }
                 }
 
-                RTC.stop();
-                RTC.set(DS1307_DATE, day);
-                RTC.start();
+                // RTC.stop();
+                // RTC.set(DS1307_DATE, day);
+                // RTC.start();
+                clock.days = day; // to remove
+                action = 1;
                 break;
             case 1: // month
                 int month;
@@ -374,9 +378,11 @@ void MENU::updateValue(int dir, int value = 0)
                         month = 12;
                     }
                 }
-                RTC.stop();
-                RTC.set(DS1307_MTH, month);
-                RTC.start();
+                // RTC.stop();
+                // RTC.set(DS1307_MTH, month);
+                // RTC.start();
+                clock.months = month; // to remove
+                action = 1;
                 break;
             case 2: // annee
                 int year;
@@ -395,9 +401,11 @@ void MENU::updateValue(int dir, int value = 0)
                         year = 0;
                     }
                 }
-                RTC.stop();
-                RTC.set(DS1307_YR, year);
-                RTC.start();
+                // RTC.stop();
+                // RTC.set(DS1307_YR, year);
+                // RTC.start();
+                clock.years = year; // to remove
+                action = 1;
                 break;
             }
             break;
@@ -423,9 +431,11 @@ void MENU::updateValue(int dir, int value = 0)
                         hour = 23;
                     }
                 }
-                RTC.stop();
-                RTC.set(DS1307_HR, hour);
-                RTC.start();
+                // RTC.stop();
+                // RTC.set(DS1307_HR, hour);
+                // RTC.start();
+                clock.hrs = hour; // to remove
+                action = 1;
                 break;
 
             case 1: // minute
@@ -447,14 +457,18 @@ void MENU::updateValue(int dir, int value = 0)
                         minute = 59;
                     }
                 }
-                RTC.stop();
-                RTC.set(DS1307_MIN, minute);
-                RTC.start();
+                // RTC.stop();
+                // RTC.set(DS1307_MIN, minute);
+                // RTC.start();
+                clock.mins = minute; // to remove
+                action = 1;
                 break;
             case 2: // seconde
-                RTC.stop();
-                RTC.set(DS1307_SEC, 0);
-                RTC.start();
+                // RTC.stop();
+                // RTC.set(DS1307_SEC, 0);
+                // RTC.start();
+                clock.secs = 0; // to remove
+                action = 1;
                 break;
             }
         }

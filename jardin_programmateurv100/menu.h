@@ -2,6 +2,7 @@
 #define MENU_h
 
 #include "myeeprom.h"
+#include "clock.h";
 
 class MENU
 {
@@ -30,6 +31,7 @@ public:
     void updateValue(int dir, int value = 0);
     void moveCursor();
     MYEEPROM eeprom = MYEEPROM();
+    CLOCK clock = CLOCK();
     int selectedEV;
     int delay;
     int stop;

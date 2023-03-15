@@ -4,7 +4,6 @@
   101: Set the selected output to HIGH
   102: Set all output to low
 */
-
 #include <Wire.h> //i2c
 #include "Arduino.h"
 #include "myeeprom.h"
@@ -49,10 +48,6 @@ Line 1 :
 Line 2 :
 0 : +
 1 : -
-2 : B4
-3 : B3
-4 : B2
-5 : B1
 
 Line 3 :
 0 : s7
@@ -111,58 +106,57 @@ void init_ev_state()
   }
 }
 
-// to remove
-void init_memory()
-{
-  eeprom.write(20, 0);
-  eeprom.write(30, 0);
-  eeprom.write(40, 0);
-  eeprom.write(50, 0);
-  eeprom.write(60, 0);
-  eeprom.write(70, 0);
-  eeprom.write(80, 0);
-  eeprom.write(90, 0);
-  eeprom.write(21, 0);
-  eeprom.write(31, 0);
-  eeprom.write(41, 0);
-  eeprom.write(51, 0);
-  eeprom.write(61, 0);
-  eeprom.write(71, 0);
-  eeprom.write(81, 0);
-  eeprom.write(91, 0);
-  eeprom.write(22, 0);
-  eeprom.write(32, 0);
-  eeprom.write(42, 0);
-  eeprom.write(52, 0);
-  eeprom.write(62, 0);
-  eeprom.write(72, 0);
-  eeprom.write(82, 0);
-  eeprom.write(92, 0);
-  eeprom.write(23, 0);
-  eeprom.write(33, 0);
-  eeprom.write(43, 0);
-  eeprom.write(53, 0);
-  eeprom.write(63, 0);
-  eeprom.write(73, 0);
-  eeprom.write(83, 0);
-  eeprom.write(93, 0);
-  eeprom.write(27, 0);
-  eeprom.write(37, 0);
-  eeprom.write(47, 0);
-  eeprom.write(57, 0);
-  eeprom.write(67, 0);
-  eeprom.write(77, 0);
-  eeprom.write(87, 0);
-  eeprom.write(97, 0);
-  eeprom.write(150, 0);
-  eeprom.write(151, 0);
-  eeprom.write(160, 0);
-  eeprom.write(161, 0);
-  eeprom.write(162, 0);
-  eeprom.write(163, 0);
-  eeprom.write(164, 0);
-  eeprom.write(165, 0);
-}
+// void init_memory()
+//{
+//   eeprom.write(20, 0);
+//   eeprom.write(30, 0);
+//   eeprom.write(40, 0);
+//   eeprom.write(50, 0);
+//   eeprom.write(60, 0);
+//   eeprom.write(70, 0);
+//   eeprom.write(80, 0);
+//   eeprom.write(90, 0);
+//   eeprom.write(21, 0);
+//   eeprom.write(31, 0);
+//   eeprom.write(41, 0);
+//   eeprom.write(51, 0);
+//   eeprom.write(61, 0);
+//   eeprom.write(71, 0);
+//   eeprom.write(81, 0);
+//   eeprom.write(91, 0);
+//   eeprom.write(22, 0);
+//   eeprom.write(32, 0);
+//   eeprom.write(42, 0);
+//   eeprom.write(52, 0);
+//   eeprom.write(62, 0);
+//   eeprom.write(72, 0);
+//   eeprom.write(82, 0);
+//   eeprom.write(92, 0);
+//   eeprom.write(23, 0);
+//   eeprom.write(33, 0);
+//   eeprom.write(43, 0);
+//   eeprom.write(53, 0);
+//   eeprom.write(63, 0);
+//   eeprom.write(73, 0);
+//   eeprom.write(83, 0);
+//   eeprom.write(93, 0);
+//   eeprom.write(27, 0);
+//   eeprom.write(37, 0);
+//   eeprom.write(47, 0);
+//   eeprom.write(57, 0);
+//   eeprom.write(67, 0);
+//   eeprom.write(77, 0);
+//   eeprom.write(87, 0);
+//   eeprom.write(97, 0);
+//   eeprom.write(150, 0);
+//   eeprom.write(151, 0);
+//   eeprom.write(160, 0);
+//   eeprom.write(161, 0);
+//   eeprom.write(162, 0);
+//   eeprom.write(163, 0);
+//   eeprom.write(164, 0);
+//   eeprom.write(165, 0);
+// }
 
 void select_button(int selected_button)
 {
@@ -329,6 +323,7 @@ void loop()
 {
   wdt_reset(); // reset watchdog
 
+  // to uncomment with real button
   // for (int i = 0; i < 3; i++)
   //{
   //   arrayofButton[i].readEvent();
@@ -501,7 +496,7 @@ void Init()
   }
 
   init_ev_state();
-  init_memory();
+  // init_memory();
 
   u8g.firstPage(); // SÃ©lectionne la 1er page mÃ©moire de l'Ã©cran
   do
@@ -605,6 +600,7 @@ void auto_mode_screen()
 
 void clock_parameter_screen()
 {
+  menu.getClock();
   u8g.drawStr(10, 11, " Horloge ");
   Serial.println(F(" Horloge "));
   u8g.drawStr(5, 22, " Date :");
@@ -906,24 +902,24 @@ void update_auto_mode_with_ath21()
 
 void loop_actualization()
 {
-  // if (menu.rtc_min != menu.rtc[1])
-  //{
-  //  check remainining time for ev on
-  for (int i = 0; i < 8; i++)
+  if (menu.rtc_min != menu.rtc[1])
   {
-    if (arrayOfEV[i].remainingTimeOn != 0)
+    check remainining time for ev on
+  for (int i = 0; i < 8; i++)
     {
-      arrayOfEV[i].remainingTimeOn--;
-
-      if (arrayOfEV[i].remainingTimeOn < 0)
+      if (arrayOfEV[i].remainingTimeOn != 0)
       {
-        // Serial.println(F("set to 0 remaning time"));
-        arrayOfEV[i].remainingTimeOn = 0;
+        arrayOfEV[i].remainingTimeOn--;
+
+        if (arrayOfEV[i].remainingTimeOn < 0)
+        {
+          // Serial.println(F("set to 0 remaning time"));
+          arrayOfEV[i].remainingTimeOn = 0;
+        }
       }
     }
+    menu.rtc_min = menu.rtc[1];
   }
-  menu.rtc_min = menu.rtc[1];
-  //}
 
   horlact();
 
