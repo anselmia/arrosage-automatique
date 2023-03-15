@@ -85,7 +85,7 @@ void CLOCK::updateMonths()
     }
 }
 
-void CLOCK::updateTime(int *rtc)
+void CLOCK::updateTime(int &rtc)
 {
     currmillis = millis();                 // currmilis== current milliseconds
                                            // obtain seconds from arduino time

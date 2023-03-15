@@ -20,6 +20,6 @@ public:
     int months;
     int years;
     CLOCK();
-    void updateTime(int *rtc);
+    void updateTime(int &rtc);
 };
 #endif

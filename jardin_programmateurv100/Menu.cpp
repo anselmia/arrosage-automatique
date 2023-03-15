@@ -1,7 +1,7 @@
 #include "menu.h"
 #include "myeeprom.h"
 #include <DS1307.h>
-#include "clock.h";
+#include "clock.h"
 
 MENU::MENU()
 {
