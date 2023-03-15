@@ -51,7 +51,7 @@ void CLOCK::updateDays()
         {
             days = 1;
             months = months + 1;
-            updateYears();
+            updateMonths();
         }
         break;
     case 2:            // 28
@@ -78,14 +78,14 @@ void CLOCK::updateDays()
 
 void CLOCK::updateMonths()
 {
-    if (month > 12) // when hours take a value bigger than 23 it returns to 0
+    if (months > 12) // when hours take a value bigger than 23 it returns to 0
     {
-        month = 1;
+        months = 1;
         years = years + 1;
     }
 }
 
-int[] CLOCK::updateTime()
+void CLOCK::updateTime(int *rtc)
 {
     currmillis = millis();                 // currmilis== current milliseconds
                                            // obtain seconds from arduino time
@@ -102,5 +102,11 @@ int[] CLOCK::updateTime()
         minlock = false; // unlock minutes increasing
     }
 
-    return {secs, mins, hrs, 0, days, months, years};
+    rtc[0] = secs;
+    rtc[1] = mins;
+    rtc[2] = hrs;
+    rtc[3] = 0;
+    rtc[4] = days;
+    rtc[5] = months;
+    rtc[6] = years;
 }

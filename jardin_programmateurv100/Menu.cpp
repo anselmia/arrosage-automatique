@@ -32,7 +32,12 @@ void MENU::initClock()
 void MENU::getClock()
 {
     RTC.get(rtc, true);
-    rtc = clock.updateTime(); // to remove when real clock
+    clock.updateTime(rtc); // to remove when real clock
+    Serial.print(rtc[2]);
+    Serial.print(":");
+    Serial.print(rtc[1]);
+    Serial.print(":");
+    Serial.print(rtc[0]);
 }
 
 void MENU::prinheu()
@@ -389,12 +394,12 @@ void MENU::updateValue(int dir, int value = 0)
                 year = rtc[6];
                 if (dir == 1)
                 {
-                    year = year - 2000;
+                    // year = year - 2000; to uncomment
                     year = year + 1;
                 }
                 else
                 {
-                    year = year - 2000;
+                    // year = year - 2000; to uncomment
                     year = year - 1;
                     if (year < 0)
                     {
@@ -441,7 +446,7 @@ void MENU::updateValue(int dir, int value = 0)
             case 1: // minute
                 int minute;
                 minute = rtc[1];
-                if (dir == 0)
+                if (dir == 1)
                 {
                     minute++;
                     if (minute > 59)

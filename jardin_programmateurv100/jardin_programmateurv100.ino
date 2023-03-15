@@ -904,8 +904,8 @@ void loop_actualization()
 {
   if (menu.rtc_min != menu.rtc[1])
   {
-    check remainining time for ev on
-  for (int i = 0; i < 8; i++)
+    // check remainining time for ev on
+    for (int i = 0; i < 8; i++)
     {
       if (arrayOfEV[i].remainingTimeOn != 0)
       {

@@ -4,12 +4,6 @@
 class CLOCK
 {
 private:
-    int secs;
-    int mins;
-    int hrs;
-    int days;
-    int months;
-    int years;
     int milliDivsecs;
     unsigned long currmillis;
     bool minlock;
@@ -19,7 +13,13 @@ private:
     void updateMonths();
 
 public:
+    int secs;
+    int mins;
+    int hrs;
+    int days;
+    int months;
+    int years;
     CLOCK();
-    int *updateTime();
+    void updateTime(int *rtc);
 };
 #endif
