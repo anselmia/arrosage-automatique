@@ -24,7 +24,7 @@ MENU::MENU()
 
 void MENU::initClock(int &error)
 {
-    getClock(int &error);
+    getClock(error);
     RTC.SetOutput(DS1307_SQW32KHZ);
 }
 

@@ -322,7 +322,7 @@ void loop()
   //   }
   // }
 
-  if (button_state == 0 && menu.rtc_min != rtc[1])
+  if (button_state == 0 && menu.rtc_min != menu.rtc[1])
     menu.inactive++;
   else
     menu.inactive = 0;
@@ -609,7 +609,7 @@ void other_parameter_screen()
   case 4:
     u8g.drawStr(5, 22, "Auto ete/hiver :");
     Serial.print(F("Auto ete/hiver : "));
-    int mem_value = eeprom.Read(mem_autoSeason));
+    int mem_value = eeprom.Read(mem_autoSeason);
     activate_screen(mem_value, 90, 22);
     Serial.println(F(""));
     u8g.drawStr(5, 33, "Temp ete/hiver :");
@@ -828,18 +828,10 @@ void update_auto_mode_with_ath21()
   aht_humidity->getEvent(&humidity);
   aht_temp->getEvent(&temp);
 
-  try
-  {
-    temp_value = (int)temp.temperature;
-    humidity_value = (int)humidity.relative_humidity;
-  }
-  catch (const std::exception &e)
-  {
-    temp_value = -1;
-    humidity_value = -1;
-  }
+  temp_value = (int)temp.temperature;
+  humidity_value = (int)humidity.relative_humidity;
 
-  if (temp_value != -1)
+  if (temp_value != 0)
   {
     int timeon;
     int freq;
@@ -853,16 +845,16 @@ void update_auto_mode_with_ath21()
     if (temp_value <= temp_change_season)
     {
       timeon = eeprom.Read(mem_winterTimeon);
-      freq eeprom.Read(mem_winterFreq);
+      freq = eeprom.Read(mem_winterFreq);
     }
     else
     {
       timeon = eeprom.Read(mem_sumerTimeon);
-      freq eeprom.Read(mem_sumerFreq);
+      freq = eeprom.Read(mem_sumerFreq);
     }
 
     for (int i = 0; i < 8; i++)
-      arrayOfEV[i].updateSeason();
+      arrayOfEV[i].updateSeason(timeon, freq);
 
     error = 0;
   }
