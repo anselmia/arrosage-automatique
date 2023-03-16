@@ -20,6 +20,6 @@ public:
     void ON();
     void OFF();
     void calculate_next_day(int day, int month, int year);
-    void updateRemainingTime(int day, int month, int year);
+    void updateRemainingTime(int hr, int day, int month, int year);
 };
 #endif

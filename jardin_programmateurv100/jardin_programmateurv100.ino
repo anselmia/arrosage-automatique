@@ -16,20 +16,7 @@
 #include "menu.h"
 
 int versio = 1.0;
-/* memory address
-0 : 20:90 auto time on for ev
-1 : 21:91 auto frequency for ev
-2 : 22:92 auto mode state for ev
-3 : 23:93 auto start time for ev
-4 : 27:97 active state for ev
-5 : 150 day temp at 12
-    151 day humidity at 12
-6 : 160 auto mode with ath21 sensor
-    161 winter/ete temp
-    162 duration summer
-    163 frequency summer
-    164 duration winter
-    165 frequency winter*/
+
 MYEEPROM eeprom = MYEEPROM();
 /* EV pins*/
 const int pin_ev1 = 2;
@@ -452,12 +439,6 @@ void Init()
 {
 
   delay(1000);
-  // Init com with arduino relay module
-  inii2c(addr_mod_relay);
-  if (error != 0)
-  {
-    module_state[0] = 1;
-  }
   // Init com with ds1307
   inii2c(0x68);
   if (error != 0)
@@ -548,29 +529,29 @@ void auto_mode_screen()
   // print auto mode state
   u8g.drawStr(5, 22, "Etat :");
   Serial.print(F(" Etat : "));
-  int mem_value = eeprom.Read(12 + (menu.selectedEV * 10));
+  int mem_value = eeprom.Read(mem_autostate + (menu.selectedEV * 10));
   activate_screen(mem_value, 70, 22);
   Serial.println(F(""));
   // print auto time on
   u8g.drawStr(5, 33, "Duree :");
-  mem_value = eeprom.Read(10 + (menu.selectedEV * 10));
+  mem_value = eeprom.Read(mem_autoTimeOn + (menu.selectedEV * 10));
   print_on_screen(70, 33, mem_value);
   Serial.print(F(" Duree : "));
   Serial.print(mem_value);
   Serial.println(F(""));
   // print auto frequency
   u8g.drawStr(5, 44, "Tous les:");
-  print_mem_value(70, 44, 11 + (menu.selectedEV * 10));
+  print_mem_value(70, 44, mem_autoFreq + (menu.selectedEV * 10));
   u8g.drawStr(110, 44, "j");
   Serial.print(F(" Tout les : "));
-  Serial.print(eeprom.Read(11 + (menu.selectedEV * 10)));
+  Serial.print(eeprom.Read(mem_autoFreq + (menu.selectedEV * 10)));
   Serial.print(F(" j"));
   Serial.println(F(""));
   // print auto start hour
   u8g.drawStr(5, 56, "Heure :");
-  print_mem_value(70, 55, 13 + (menu.selectedEV * 10));
+  print_mem_value(70, 55, mem_autoStartHour + (menu.selectedEV * 10));
   Serial.print(F(" Heure : "));
-  Serial.print(eeprom.Read(13 + (menu.selectedEV * 10)));
+  Serial.print(eeprom.Read(mem_autoStartHour + (menu.selectedEV * 10)));
   Serial.println(F(""));
 }
 
@@ -619,36 +600,36 @@ void other_parameter_screen()
   case 4:
     u8g.drawStr(5, 22, "Auto ete/hiver :");
     Serial.print(F("Auto ete/hiver : "));
-    int mem_value = eeprom.Read(160);
+    int mem_value = eeprom.Read(mem_autoSeason));
     activate_screen(mem_value, 90, 22);
     Serial.println(F(""));
     u8g.drawStr(5, 33, "Temp ete/hiver :");
-    print_mem_value(70, 33, 161);
+    print_mem_value(70, 33, mem_tempSeason);
     Serial.print(F("Temp ete/hiver : "));
-    Serial.print(eeprom.Read(161));
+    Serial.print(eeprom.Read(mem_tempSeason));
     Serial.println(F(""));
     u8g.drawStr(5, 44, "Duree ete :");
-    print_mem_value(70, 44, 162);
+    print_mem_value(70, 44, mem_sumerTimeon);
     Serial.print(F("Duree ete : "));
-    Serial.print(eeprom.Read(162));
+    Serial.print(eeprom.Read(mem_sumerTimeon));
     Serial.println(F(""));
     u8g.drawStr(5, 55, "Freq ete :");
-    print_mem_value(70, 55, 163);
+    print_mem_value(70, 55, mem_sumerFreq);
     Serial.print(F("Freq ete : "));
-    Serial.print(eeprom.Read(163));
+    Serial.print(eeprom.Read(mem_sumerFreq));
     Serial.println(F(""));
     break;
   case 5:
   case 6:
     u8g.drawStr(5, 22, "Duree hiver :");
-    print_mem_value(70, 22, 164);
+    print_mem_value(70, 22, mem_winterTimeon);
     Serial.print(F("Duree hiver : "));
-    Serial.print(eeprom.Read(164));
+    Serial.print(eeprom.Read(mem_winterTimeon));
     Serial.println(F(""));
     u8g.drawStr(5, 33, "Freq hivers :");
-    print_mem_value(70, 33, 165);
+    print_mem_value(70, 33, mem_winterFreq);
     Serial.print(F("Freq hivers : "));
-    Serial.print(eeprom.Read(165));
+    Serial.print(eeprom.Read(mem_winterFreq));
     Serial.println(F(""));
     break;
   }
@@ -757,7 +738,7 @@ void state_screen()
   Serial.println(F(""));
   u8g.drawStr(5, 33, "Etat : ");
   Serial.print(F("Etat : "));
-  int mem_value = eeprom.Read(17 + (menu.selectedEV * 10));
+  int mem_value = eeprom.Read(mem_state + (menu.selectedEV * 10));
   activate_screen(mem_value, 70, 33);
   Serial.println(F(""));
 }
@@ -835,47 +816,38 @@ void update_auto_mode_with_ath21()
   aht_humidity->getEvent(&humidity);
   aht_temp->getEvent(&temp);
 
-  int temp_value;
+  int temp_value = -1;
   temp_value = (int)temp.temperature;
-  eeprom.write(150, temp_value);
+  eeprom.write(mem_dayTemp, temp_value);
   int humidity_value;
   humidity_value = (int)humidity.relative_humidity;
-  eeprom.write(151, humidity_value);
+  eeprom.write(mem_dayHumidity, humidity_value);
 
   int temp_change_season;
-  temp_change_season = eeprom.Read(161);
-
-  for (int i = 0; i < 8; i++)
+  temp_change_season = eeprom.Read(mem_tempSeason);
+  if (temp_value != -1)
   {
-    if (temp_value <= temp_change_season)
+    int timeon;
+    int freq;
+    for (int i = 0; i < 8; i++)
     {
-      mem_value = eeprom.Read(162);
-      eeprom.write(10 + (10 * (i + 1)), mem_value);
-      mem_value = eeprom.Read(163);
-      eeprom.write(11 + (10 * (i + 1)), mem_value);
-    }
-    else
-    {
-      mem_value = eeprom.Read(164);
-      eeprom.write(10 + (10 * (i + 1)), mem_value);
-      mem_value = eeprom.Read(165);
-      eeprom.write(11 + (10 * (i + 1)), mem_value);
+      if (temp_value <= temp_change_season)
+      {
+        timeon = eeprom.Read(mem_winterTimeon);
+        freq eeprom.Read(mem_winterFreq);
+      }
+      else
+      {
+        timeon = eeprom.Read(mem_sumerTimeon);
+        freq eeprom.Read(mem_sumerFreq);
+      }
+      arrayOfEV[i].updateSeason();
     }
   }
 }
 
 void loop_actualization()
 {
-  // if ev not in active state reset remining time to 0
-  for (int i = 0; i < 8; i++)
-  {
-    if (eeprom.Read(17 + (10 * (i + 1))) == 0)
-    {
-      arrayOfEV[i].remainingTimeOn = 0;
-      arrayOfEV[i].nextDayOn = 0;
-    }
-  }
-
   if (menu.delay == 1)
   {
     arrayOfEV[menu.selectedEV - 1].nextDayOn += menu.screenValue;
@@ -894,7 +866,7 @@ void loop_actualization()
 
   // Check Temperature and humidity at 12 o'clock if auto mode on with aht21
   int mem_value;
-  mem_value = eeprom.Read(160);
+  mem_value = eeprom.Read(mem_autoSeason);
   if (mem_value == 1)
   {
     if (menu.rtc_day != menu.rtc[4])
@@ -906,30 +878,13 @@ void loop_actualization()
     }
   }
 
-  // Update remanining time
+  // Update menu last minute
   if (menu.rtc_min != menu.rtc[1])
-  {
-
-    for (int i = 0; i < 8; i++)
-    {
-      if (arrayOfEV[i].remainingTimeOn != 0)
-      {
-        arrayOfEV[i].remainingTimeOn--;
-
-        if (arrayOfEV[i].remainingTimeOn < 0)
-        {
-          arrayOfEV[i].remainingTimeOn = 0;
-        }
-      }
-    }
     menu.rtc_min = menu.rtc[1];
-  }
 
   // Calculate next day on and remaining time
   for (int i = 0; i < 8; i++)
-  {
-    arrayOfEV[i].updateRemainingTime(menu.rtc[4], menu.rtc[5], menu.rtc[6]);
-  }
+    arrayOfEV[i].updateRemainingTime(menu.rtc[2], menu.rtc[4], menu.rtc[5], menu.rtc[6]);
 }
 
 void print_mem_value(int col, int line, int mem_address)

@@ -267,7 +267,7 @@ void MENU::selectEV(int ev)
     case 8:
     case 10:
     case 11:
-        if (eeprom.Read(17 + (10 * ev)) == 1)
+        if (eeprom.Read(mem_state + (10 * ev)) == 1)
         {
             actualLine = 1;
             action = 1;
@@ -292,25 +292,25 @@ void MENU::updateValue(int dir, int value = 0)
         switch (actualLine)
         {
         case 1:
-            mem_adress = 12 + (10 * selectedEV);
+            mem_adress = mem_autostate + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
             max_value = 1;
             action = 1;
             break;
         case 2:
-            mem_adress = 10 + (10 * selectedEV);
+            mem_adress = mem_autoTimeOn + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
             max_value = 14;
             action = 1;
             break;
         case 3:
-            mem_adress = 11 + (10 * selectedEV);
+            mem_adress = mem_autoFreq + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
             max_value = 20;
             action = 1;
             break;
         case 4:
-            mem_adress = 13 + (10 * selectedEV);
+            mem_adress = mem_autoStartHour + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
             max_value = 23;
             action = 1;
@@ -468,37 +468,37 @@ void MENU::updateValue(int dir, int value = 0)
         switch (actualLine)
         {
         case 1:
-            mem_adress = 160;
+            mem_adress = mem_autoSeason;
             mem_value = eeprom.Read(mem_adress);
             max_value = 1;
             action = 1;
             break;
         case 2:
-            mem_adress = 161;
+            mem_adress = mem_tempSeason;
             mem_value = eeprom.Read(mem_adress);
             max_value = 35;
             action = 1;
             break;
         case 3:
-            mem_adress = 162;
+            mem_adress = mem_sumerTimeon;
             mem_value = eeprom.Read(mem_adress);
             max_value = 20;
             action = 1;
             break;
         case 4:
-            mem_adress = 163;
+            mem_adress = mem_sumerFreq;
             mem_value = eeprom.Read(mem_adress);
             max_value = 14;
             action = 1;
             break;
         case 6:
-            mem_adress = 164;
+            mem_adress = mem_winterTimeon;
             mem_value = eeprom.Read(mem_adress);
             max_value = 20;
             action = 1;
             break;
         case 7:
-            mem_adress = 165;
+            mem_adress = mem_winterFreq;
             mem_value = eeprom.Read(mem_adress);
             max_value = 14;
             action = 1;
@@ -512,7 +512,7 @@ void MENU::updateValue(int dir, int value = 0)
         action = 1;
         break;
     case 9:
-        mem_adress = 17 + (10 * selectedEV);
+        mem_adress = mem_state + (10 * selectedEV);
         mem_value = eeprom.Read(mem_adress);
         max_value = 1;
         action = 1;

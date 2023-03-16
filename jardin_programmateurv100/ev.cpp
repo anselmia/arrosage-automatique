@@ -34,7 +34,7 @@ void EV::calculate_next_day(int day, int month, int year)
     int day_in_month;
     int next_day;
 
-    day_to_add = eeprom.Read(11 + (10 * num));
+    day_to_add = eeprom.Read(mem_autoFreq + (10 * num));
     next_day = day + day_to_add;
 
     switch (month)
@@ -67,47 +67,63 @@ void EV::calculate_next_day(int day, int month, int year)
 
 int EV::leap_year(int year)
 {
-    int days;
+    int days_in_month;
     // leap year if perfectly divisible by 400
     if (year % 400 == 0)
     {
-        days = 29;
+        days_in_month = 29;
     }
     // not a leap year if divisible by 100
     // but not divisible by 400
     else if (year % 100 == 0)
     {
-        days = 28;
+        days_in_month = 28;
     }
     // leap year if not divisible by 100
     // but divisible by 4
     else if (year % 4 == 0)
     {
-        days = 29;
+        days_in_month = 29;
     }
     // all other years are not leap years
     else
     {
-        days = 28;
+        days_in_month = 28;
     }
 
-    return days;
+    return days_in_month;
 }
 
-void EV::updateRemainingTime(int day, int month, int year)
+void EV::updateRemainingTime(int hr, int day, int month, int year)
 {
+    if (eeprom.Read(mem_state + (10 * num)) == 0)
+    {
+        remainingTimeOn = 0;
+        nextDayOn = 0;
+    }
+
+    if (remainingTimeOn != 0)
+    {
+        remainingTimeOn--;
+
+        if (remainingTimeOn < 0)
+        {
+            remainingTimeOn = 0;
+        }
+    }
+
     int time_on = 0;
     // Serial.println(eeprom.Read(12 + (10 * (i + 1))));
     //  if mode auto on
-    if (eeprom.Read(12 + (10 * num)) == 1)
+    if (eeprom.Read(mem_autostate + (10 * num)) == 1)
     {
         // if ev state is on
         // Serial.println(eeprom.Read(17 + (10 * (i + 1))));
-        if (eeprom.Read(17 + (10 * num)) == 1)
+        if (eeprom.Read(mem_state + (10 * num)) == 1)
         {
             // Serial.println(eeprom.Read(13 + (10 * (i + 1))));
             //  if clock h == auto start time
-            if (hr == eeprom.Read(13 + (10 * num)))
+            if (hr == eeprom.Read(mem_autoStartHour + (10 * num)))
             {
                 if (remainingTimeOn == 0)
                 {
@@ -120,7 +136,7 @@ void EV::updateRemainingTime(int day, int month, int year)
                     if (nextDayOn == day)
                     {
                         // mise en route
-                        time_on = eeprom.Read(10 + (10 * num));
+                        time_on = eeprom.Read(mem_autoTimeOn + (10 * num));
                         if (time_on <= 0)
                         {
                             time_on = 0;
@@ -144,4 +160,10 @@ void EV::updateRemainingTime(int day, int month, int year)
             }
         }
     }
+}
+
+void EV::updateSeason(int timeon, int freq)
+{
+    eeprom.write(mem_autoTimeOn + (10 * num), timeon);
+    eeprom.write(mem_autoFreq + (10 * num), freq);
 }
