@@ -7,10 +7,10 @@ MENU::MENU()
 {
     MYEEPROM eeprom = MYEEPROM();
     CLOCK clock = CLOCK();
-    int rtc[7];
-    int rtc_min = 0;
-    int rtc_day = 0;
-    int screenValue = 0;
+
+    rtc_min = -1;
+    rtc_day = 0;
+    screenValue = 0;
     actualScreen = 0;
     actualLine = 0;
     cursorPos = 0;

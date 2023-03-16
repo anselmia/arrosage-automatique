@@ -3,11 +3,9 @@
 
 CLOCK::CLOCK()
 {
-    int secs = 0;
-    int mins = -1; // it is -1 because when program start  the minutes are incremmented by 1 when secundes are zero
-    int hrs = 0;
-    unsigned long currmillis;
-    unsigned long prevMillis;
+    secs = 0;
+    mins = 0; // it is -1 because when program start  the minutes are incremmented by 1 when secundes are zero
+    hrs = 0;
 }
 
 // function of minutes

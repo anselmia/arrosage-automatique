@@ -1,5 +1,5 @@
 /* Code to relay module
-  1,2,3,4,5,6,7,8 : select the output pin for desired ev
+  1,2,3,4,5,6,7 : select the output pin for desired ev
   100: Set the selected output to LOW
   101: Set the selected output to HIGH
   102: Set all output to low
@@ -26,12 +26,14 @@ const int pin_ev4 = 5;
 const int pin_ev5 = 6;
 const int pin_ev6 = 7;
 const int pin_ev7 = 8;
-const int pin_ev8 = 9;
 
 /* Error led pins*/
 const int pin_led = 1;
 
-EV arrayOfEV[8] = {EV(pin_ev1, 1), EV(pin_ev2, 2), EV(pin_ev3, 3), EV(pin_ev4, 4), EV(pin_ev5, 5), EV(pin_ev6, 6), EV(pin_ev7, 7), EV(pin_ev8, 8)};
+/* Pin alim scrren */
+const int pin_screen = 9;
+
+EV arrayOfEV[7] = {EV(pin_ev1, 1), EV(pin_ev2, 2), EV(pin_ev3, 3), EV(pin_ev4, 4), EV(pin_ev5, 5), EV(pin_ev6, 6), EV(pin_ev7, 7)};
 // SCREEN screen;
 // bouton
 int button_state = 0;
@@ -62,12 +64,9 @@ BUTTON arrayofButton[3] = {BUTTON(pin_button_line1), BUTTON(pin_button_line2), B
 MENU menu = MENU();
 boolean aar = true; // mode wire endtransmission
 int module_state[3];
-int manual_time_on = 0;
 char buf[10];
 
-const int max_time_on_ev = 20;
 U8GLIB_SSD1309_128X64 u8g(13, 11, 10, U8G_PIN_NONE);
-
 Adafruit_AHTX0 aht;
 Adafruit_Sensor *aht_humidity, *aht_temp;
 int error = 0;
@@ -85,16 +84,6 @@ void setup()
 
   Serial.begin(9600);
   Init();
-}
-
-void init_ev_state()
-{
-  for (int i = 0; i < 8; i++)
-  {
-    arrayOfEV[i].OFF();
-    arrayOfEV[i].remainingTimeOn = 0;
-    arrayOfEV[i].nextDayOn = 0;
-  }
 }
 
 // void init_memory()
@@ -218,8 +207,6 @@ void select_button(int selected_button)
     arrayofButton[2].type = 0;
     menu.selectEV(1);
     break;
-  case 8:
-    break;
   }
 }
 
@@ -234,21 +221,25 @@ void select()
     arrayofButton[0].type = 0;
     Serial.println(F("Forward")); // to remove after test
     menu.forward();
+    button_state = 1;
     break;
   case 56: // up
     arrayofButton[0].type = 1;
     Serial.println(F("up")); // to remove after test
     menu.up();
+    button_state = 1;
     break;
   case 52: // left
     arrayofButton[0].type = 2;
     Serial.println(F("backard")); // to remove after test
     menu.backward();
+    button_state = 1;
     break;
   case 50: // down
     arrayofButton[0].type = 3;
     Serial.println(F("Downward"));
     menu.down();
+    button_state = 1;
     break;
   }
 
@@ -257,10 +248,12 @@ void select()
   case 43: // +
     arrayofButton[1].type = 0;
     menu.updateValue(1);
+    button_state = 1;
     break;
   case 45: // -
     arrayofButton[1].type = 1;
     menu.updateValue(0);
+    button_state = 1;
     break;
   }
 
@@ -269,29 +262,36 @@ void select()
   case 117: // s7
     arrayofButton[2].type = 6;
     menu.selectEV(7);
+    button_state = 1;
     break;
   case 121: // s6
     arrayofButton[2].type = 5;
     menu.selectEV(6);
+    button_state = 1;
   case 116: // s5
     arrayofButton[2].type = 4;
     menu.selectEV(5);
+    button_state = 1;
     break;
   case 114: // s4
     arrayofButton[2].type = 3;
     menu.selectEV(4);
+    button_state = 1;
     break;
   case 101: // s3
     arrayofButton[2].type = 2;
     menu.selectEV(3);
+    button_state = 1;
     break;
   case 122: // s2
     arrayofButton[2].type = 1;
     menu.selectEV(2);
+    button_state = 1;
     break;
   case 97: // s1
     arrayofButton[2].type = 0;
     menu.selectEV(1);
+    button_state = 1;
     break;
   case 18:
     break;
@@ -322,11 +322,6 @@ void loop()
   //   }
   // }
 
-  if (button_state == 0 && menu.rtc_min != menu.rtc[1])
-    menu.inactive++;
-  else
-    menu.inactive = 0;
-
   select(); // to remove()
 
   u8g.firstPage(); // Select the first memory page of the scrren
@@ -339,77 +334,95 @@ void loop()
 
   delay(100);
   loop_actualization();
-  update_all_ev_state();
-
+  check_inactiveScreen();
   reset_button();
+  check_error();
+  button_state = 0; // to remove
+}
+
+void check_inactiveScreen()
+{
+  if (button_state == 1 && menu.inactive > 5)
+  {
+    digitalWrite(pin_screen, HIGH);
+    main_screen();
+    menu.inactive = 0;
+  }
+
+  if (button_state == 0 && menu.rtc_min != menu.rtc[1])
+    menu.inactive++;
+
+  if (menu.inactive > 5)
+    digitalWrite(pin_screen, LOW);
 }
 
 void reset_button()
 {
-  if (button_state == 0)
-  {
-    if (menu.rtc_min != menu.rtc[1])
-      menu.inactive++;
-    if (menu.inactive == 2)
-    {
-      main_screen();
-    }
-  }
-  else
-    menu.inactive = 0;
-
   arrayofButton[0].type = -1;
   arrayofButton[1].type = -1;
   arrayofButton[2].type = -1;
 }
 
+void check_error()
+{
+  if (error == 1)
+  {
+    digitalWrite(pin_led, HIGH);
+  }
+  else
+    digitalWrite(pin_led, LOW);
+}
+
 void print_screen()
 {
-  if (menu.action == 0)
+  if (menu.inactive < 5)
   {
-    draw_cursor();
-  }
-  else if (menu.action == 1)
-  {
-    switch (menu.actualScreen)
+    if (menu.action == 0)
     {
-    case 0:
-      main_screen();
-      break;
-    case 1:
-      menu_screen();
-      break;
-    case 2:
-      parameter_screen();
-      break;
-    case 4:
-      auto_mode_screen();
-      break;
-    case 6:
-      clock_parameter_screen();
-      break;
-    case 7:
-      other_parameter_screen();
-      break;
-    case 8:
-      manual_mode_screen();
-      break;
-    case 9:
-      state_screen();
-      break;
-    case 10:
-      delay_screen();
-      break;
-    case 11:
-      stop_screen();
-      break;
-    default:
-      main_screen();
-      break;
+      draw_cursor();
     }
-    draw_cursor();
+    else if (menu.action == 1)
+    {
+      switch (menu.actualScreen)
+      {
+      case 0:
+        main_screen();
+        break;
+      case 1:
+        menu_screen();
+        break;
+      case 2:
+        parameter_screen();
+        break;
+      case 4:
+        auto_mode_screen();
+        break;
+      case 6:
+        clock_parameter_screen();
+        break;
+      case 7:
+        other_parameter_screen();
+        break;
+      case 8:
+        manual_mode_screen();
+        break;
+      case 9:
+        state_screen();
+        break;
+      case 10:
+        delay_screen();
+        break;
+      case 11:
+        stop_screen();
+        break;
+      default:
+        main_screen();
+        break;
+      }
+      draw_cursor();
+    }
+    menu.action = -1;
   }
-  menu.action = -1;
 }
 
 void inii2c(int adr)
@@ -460,8 +473,13 @@ void Init()
   {
     module_state[2] = 1;
   }
+  // Init EV
+  for (int i = 0; i < 7; i++)
+    arrayOfEV[i].init();
 
-  init_ev_state();
+  // set output 1 for error led
+  pinMode(pin_led, OUTPUT);
+
   // init_memory();
 
   u8g.firstPage(); // SÃ©lectionne la 1er page mÃ©moire de l'Ã©cran
@@ -469,7 +487,6 @@ void Init()
   {
     u8g.setFont(u8g_font_tpss);           // Utilise la police de caractÃ¨re standard
     u8g.drawStr(5, 11, "Initialisation"); // 12 line
-    Serial.println(F("Initialisation"));
     if (module_state[1] == 0)
     {
       menu.getClock(error);
@@ -478,13 +495,9 @@ void Init()
     else
     {
       u8g.drawStr(10, 22, "erreur horloge");
-      Serial.println(F("erreur horloge"));
     }
     u8g.drawStr(5, 44, "version");
-    Serial.print(F("Version : "));
     print_on_screen(50, 44, versio);
-    Serial.print(versio);
-    Serial.println("");
   } while (u8g.nextPage());
 }
 
@@ -725,15 +738,6 @@ void print_ev_state()
   Serial.print(F(", "));
   Serial.print(arrayOfEV[6].nextDayOn);
   Serial.println(F(""));
-  u8g.drawStr(85, 44, "8 : ");
-  print_on_screen(90, 44, arrayOfEV[7].remainingTimeOn);
-  u8g.drawStr(100, 44, ",");
-  print_on_screen(115, 44, arrayOfEV[7].nextDayOn);
-  Serial.print(F("8 : "));
-  Serial.print(arrayOfEV[7].remainingTimeOn);
-  Serial.print(F(", "));
-  Serial.print(arrayOfEV[7].nextDayOn);
-  Serial.println(F(""));
 }
 
 void state_screen()
@@ -802,21 +806,6 @@ void draw_menu_edge()
   u8g.drawRFrame(x, y, length, height, r);
 }
 
-void update_all_ev_state()
-{
-  for (int ev = 1; ev < 9; ev++)
-  {
-    if (arrayOfEV[ev - 1].remainingTimeOn == 0)
-    {
-      arrayOfEV[ev - 1].OFF();
-    }
-    else
-    {
-      arrayOfEV[ev - 1].ON();
-    }
-  }
-}
-
 void update_auto_mode_with_ath21()
 {
   int mem_value;
@@ -853,7 +842,7 @@ void update_auto_mode_with_ath21()
       freq = eeprom.Read(mem_sumerFreq);
     }
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 7; i++)
       arrayOfEV[i].updateSeason(timeon, freq);
 
     error = 0;
@@ -866,41 +855,50 @@ void loop_actualization()
 {
   if (menu.delay == 1)
   {
+    Serial.println("delay");
     arrayOfEV[menu.selectedEV - 1].nextDayOn += menu.screenValue;
     menu.delay = 0;
   }
   if (menu.manual == 1)
   {
+    Serial.println("manual");
     arrayOfEV[menu.selectedEV - 1].remainingTimeOn = menu.screenValue;
     menu.manual = 0;
   }
   if (menu.stop == 1)
   {
+    Serial.println("stop");
     arrayOfEV[menu.selectedEV - 1].remainingTimeOn = 0;
     menu.stop = 0;
   }
 
   // Check Temperature and humidity at 12 o'clock if auto mode on with aht21
-  int mem_value;
-  mem_value = eeprom.Read(mem_autoSeason);
-  if (mem_value == 1)
-  {
-    if (menu.rtc_day != menu.rtc[4])
-    {
-      if (menu.rtc[2] == 12)
-      {
-        update_auto_mode_with_ath21();
-      }
-    }
-  }
 
   // Update menu last minute
   if (menu.rtc_min != menu.rtc[1])
+  {
+    int mem_value;
+    mem_value = eeprom.Read(mem_autoSeason);
+    if (mem_value == 1)
+    {
+      if (menu.rtc_day != menu.rtc[4])
+      {
+        if (menu.rtc[2] == 12)
+        {
+          update_auto_mode_with_ath21();
+        }
+        menu.rtc_day = menu.rtc[4];
+      }
+    }
     menu.rtc_min = menu.rtc[1];
 
-  // Calculate next day on and remaining time
-  for (int i = 0; i < 8; i++)
-    arrayOfEV[i].updateRemainingTime(menu.rtc[2], menu.rtc[4], menu.rtc[5], menu.rtc[6]);
+    // Calculate next day on and remaining time
+    for (int i = 0; i < 7; i++)
+    {
+      arrayOfEV[i].updateRemainingTime(menu.rtc[2], menu.rtc[4], menu.rtc[5], menu.rtc[6]);
+      arrayOfEV[i].update_state();
+    }
+  }
 }
 
 void print_mem_value(int col, int line, int mem_address)

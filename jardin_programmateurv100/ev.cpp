@@ -11,9 +11,11 @@ EV::EV(int pin, int numEV)
     pinMode(evPin, OUTPUT);
 }
 
-int EV::getState()
+void EV::init()
 {
-    return evState;
+    OFF();
+    remainingTimeOn = 0;
+    nextDayOn = 0;
 }
 
 void EV::ON()
@@ -26,6 +28,18 @@ void EV::OFF()
 {
     evState = 0;
     digitalWrite(evPin, LOW);
+}
+
+void EV::update_state()
+{
+    if (remainingTimeOn == 0)
+    {
+        OFF();
+    }
+    else
+    {
+        ON();
+    }
 }
 
 void EV::calculate_next_day(int day, int month, int year)
@@ -113,15 +127,12 @@ void EV::updateRemainingTime(int hr, int day, int month, int year)
     }
 
     int time_on = 0;
-    // Serial.println(eeprom.Read(12 + (10 * (i + 1))));
     //  if mode auto on
     if (eeprom.Read(mem_autostate + (10 * num)) == 1)
     {
         // if ev state is on
-        // Serial.println(eeprom.Read(17 + (10 * (i + 1))));
         if (eeprom.Read(mem_state + (10 * num)) == 1)
         {
-            // Serial.println(eeprom.Read(13 + (10 * (i + 1))));
             //  if clock h == auto start time
             if (hr == eeprom.Read(mem_autoStartHour + (10 * num)))
             {
@@ -145,6 +156,7 @@ void EV::updateRemainingTime(int hr, int day, int month, int year)
                         {
                             time_on = max_time_on_ev;
                         }
+
                         remainingTimeOn = time_on;
                         calculate_next_day(day, month, year);
                     }
@@ -154,10 +166,7 @@ void EV::updateRemainingTime(int hr, int day, int month, int year)
         else
         {
             remainingTimeOn = 0;
-            if (nextDayOn == day)
-            {
-                nextDayOn = 0;
-            }
+            nextDayOn = 0;
         }
     }
 }
