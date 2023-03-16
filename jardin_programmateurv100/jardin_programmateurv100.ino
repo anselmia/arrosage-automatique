@@ -27,6 +27,10 @@ const int pin_ev5 = 6;
 const int pin_ev6 = 7;
 const int pin_ev7 = 8;
 const int pin_ev8 = 9;
+
+/* Error led pins*/
+const int pin_led = 1;
+
 EV arrayOfEV[8] = {EV(pin_ev1, 1), EV(pin_ev2, 2), EV(pin_ev3, 3), EV(pin_ev4, 4), EV(pin_ev5, 5), EV(pin_ev6, 6), EV(pin_ev7, 7), EV(pin_ev8, 8)};
 // SCREEN screen;
 // bouton
@@ -77,7 +81,7 @@ void setup()
   DDRC |= _BV(2) | _BV(3); // POWER:Vcc Gnd
   PORTC |= _BV(3);         // VCC PINC3
   // initialisation de ds1307
-  menu.initClock();
+  menu.initClock(error);
 
   Serial.begin(9600);
   Init();
@@ -297,7 +301,7 @@ void select()
 void loop()
 {
   wdt_reset(); // reset watchdog
-
+  menu.getClock(error);
   // to uncomment with real button
   // for (int i = 0; i < 3; i++)
   //{
@@ -318,13 +322,18 @@ void loop()
   //   }
   // }
 
+  if (button_state == 0 && menu.rtc_min != rtc[1])
+    menu.inactive++;
+  else
+    menu.inactive = 0;
+
   select(); // to remove()
 
   u8g.firstPage(); // Select the first memory page of the scrren
   do
   {
     u8g.setFont(u8g_font_tpss); // Use standard character
-    menu.getClock();
+
     print_screen();
   } while (u8g.nextPage()); // Select the next page
 
@@ -463,7 +472,7 @@ void Init()
     Serial.println(F("Initialisation"));
     if (module_state[1] == 0)
     {
-      menu.getClock();
+      menu.getClock(error);
       print_actual_time();
     }
     else
@@ -557,7 +566,7 @@ void auto_mode_screen()
 
 void clock_parameter_screen()
 {
-  menu.getClock();
+  menu.getClock(error);
   u8g.drawStr(10, 11, " Horloge ");
   Serial.println(F(" Horloge "));
   u8g.drawStr(5, 22, " Date :");
@@ -811,39 +820,54 @@ void update_all_ev_state()
 void update_auto_mode_with_ath21()
 {
   int mem_value;
+  int temp_value = -1;
+  int humidity_value = -1;
+
   sensors_event_t humidity;
   sensors_event_t temp;
   aht_humidity->getEvent(&humidity);
   aht_temp->getEvent(&temp);
 
-  int temp_value = -1;
-  temp_value = (int)temp.temperature;
-  eeprom.write(mem_dayTemp, temp_value);
-  int humidity_value;
-  humidity_value = (int)humidity.relative_humidity;
-  eeprom.write(mem_dayHumidity, humidity_value);
+  try
+  {
+    temp_value = (int)temp.temperature;
+    humidity_value = (int)humidity.relative_humidity;
+  }
+  catch (const std::exception &e)
+  {
+    temp_value = -1;
+    humidity_value = -1;
+  }
 
-  int temp_change_season;
-  temp_change_season = eeprom.Read(mem_tempSeason);
   if (temp_value != -1)
   {
     int timeon;
     int freq;
-    for (int i = 0; i < 8; i++)
+
+    eeprom.write(mem_dayTemp, temp_value);
+    eeprom.write(mem_dayHumidity, humidity_value);
+
+    int temp_change_season;
+    temp_change_season = eeprom.Read(mem_tempSeason);
+
+    if (temp_value <= temp_change_season)
     {
-      if (temp_value <= temp_change_season)
-      {
-        timeon = eeprom.Read(mem_winterTimeon);
-        freq eeprom.Read(mem_winterFreq);
-      }
-      else
-      {
-        timeon = eeprom.Read(mem_sumerTimeon);
-        freq eeprom.Read(mem_sumerFreq);
-      }
-      arrayOfEV[i].updateSeason();
+      timeon = eeprom.Read(mem_winterTimeon);
+      freq eeprom.Read(mem_winterFreq);
     }
+    else
+    {
+      timeon = eeprom.Read(mem_sumerTimeon);
+      freq eeprom.Read(mem_sumerFreq);
+    }
+
+    for (int i = 0; i < 8; i++)
+      arrayOfEV[i].updateSeason();
+
+    error = 0;
   }
+  else
+    error = 1;
 }
 
 void loop_actualization()

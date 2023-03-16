@@ -17,10 +17,8 @@ public:
     int cursorPos;
     int action;
     int screenValue;
-    void initClock();
-    void getClock();
-    void prinheu();
-    void prinheu2();
+    void initClock(int &error);
+    void getClock(int &error);
     void forward();
     void backward();
     void up();

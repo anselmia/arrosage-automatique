@@ -22,16 +22,22 @@ MENU::MENU()
     manual = 0;
 }
 
-void MENU::initClock()
+void MENU::initClock(int &error)
 {
-    getClock();
+    getClock(int &error);
     RTC.SetOutput(DS1307_SQW32KHZ);
 }
 
-void MENU::getClock()
+void MENU::getClock(int &error)
 {
+
     RTC.get(rtc, true);
     clock.updateTime(rtc); // to remove when real clock
+
+    if (rtc[0] == 0 && rtc[1] == 0 && rtc[2] == 0 && rtc[3] == 0 && rtc[4] == 0 && rtc[5] == 0 && rtc[6] == 0)
+        error = 1;
+    else
+        error = 0;
 }
 
 void MENU::forward()
@@ -318,7 +324,6 @@ void MENU::updateValue(int dir, int value = 0)
         }
         break;
     case 6:
-        getClock();
         switch (actualLine)
         {
         case 1:
