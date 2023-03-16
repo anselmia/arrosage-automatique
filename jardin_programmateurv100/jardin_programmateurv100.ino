@@ -31,7 +31,16 @@ int versio = 1.0;
     164 duration winter
     165 frequency winter*/
 MYEEPROM eeprom = MYEEPROM();
-EV arrayOfEV[8] = {EV(2), EV(3), EV(4), EV(5), EV(6), EV(7), EV(8), EV(9)};
+/* EV pins*/
+const int pin_ev1 = 2;
+const int pin_ev2 = 3;
+const int pin_ev3 = 4;
+const int pin_ev4 = 5;
+const int pin_ev5 = 6;
+const int pin_ev6 = 7;
+const int pin_ev7 = 8;
+const int pin_ev8 = 9;
+EV arrayOfEV[8] = {EV(pin_ev1, 1), EV(pin_ev2, 2), EV(pin_ev3, 3), EV(pin_ev4, 4), EV(pin_ev5, 5), EV(pin_ev6, 6), EV(pin_ev7, 7), EV(pin_ev8, 8)};
 // SCREEN screen;
 // bouton
 int button_state = 0;
@@ -65,9 +74,8 @@ int module_state[3];
 int manual_time_on = 0;
 char buf[10];
 
-const int addr_mod_relay = 9;
 const int max_time_on_ev = 20;
-U8GLIB_ST7920_128X64 u8g(13, 11, 10, U8G_PIN_NONE);
+U8GLIB_SSD1309_128X64 u8g(13, 11, 10, U8G_PIN_NONE);
 
 Adafruit_AHTX0 aht;
 Adafruit_Sensor *aht_humidity, *aht_temp;
@@ -88,19 +96,11 @@ void setup()
   Init();
 }
 
-void send_to_module(int adr, int val)
-{
-  Wire.beginTransmission(adr);
-  Wire.write(val);
-  error = Wire.endTransmission(aar);
-}
-
 void init_ev_state()
 {
-  // Set all EV off
-  send_to_module(addr_mod_relay, 102);
   for (int i = 0; i < 8; i++)
   {
+    arrayOfEV[i].OFF();
     arrayOfEV[i].remainingTimeOn = 0;
     arrayOfEV[i].nextDayOn = 0;
   }
@@ -163,26 +163,22 @@ void select_button(int selected_button)
   switch (arrayofButton[0].getSelection())
   {
   case 1: // right
-    menu.prinheu();
     arrayofButton[0].type = 0;
     Serial.println(F("Forward")); // to remove after test
     menu.forward();
     break;
   case 5: // up
-    menu.prinheu();
     arrayofButton[0].type = 1;
     Serial.println(F("upward")); // to remove after test
     menu.up();
     break;
   case 7: // left
-    menu.prinheu();
     arrayofButton[0].type = 2;
     Serial.println(F("backard")); // to remove after test
     menu.backward();
 
     break;
   case 8: // down
-    menu.prinheu();
     arrayofButton[0].type = 3;
     Serial.println(F("Downward"));
     menu.down();
@@ -192,13 +188,11 @@ void select_button(int selected_button)
   switch (arrayofButton[0].getSelection())
   {
   case 1: // +
-    menu.prinheu();
     arrayofButton[1].type = 0;
     menu.updateValue(1);
 
     break;
   case 2: // -
-    menu.prinheu();
     arrayofButton[1].type = 1;
     menu.updateValue(0);
     break;
@@ -241,30 +235,26 @@ void select_button(int selected_button)
 // to remove
 void select()
 {
-  int selectedButton = 0;
-  selectedButton = Serial.parseInt();
+  byte selectedButton;
+  selectedButton = Serial.read();
   switch (selectedButton)
   {
-  case 6: // right
-    menu.prinheu();
+  case 54: // right
     arrayofButton[0].type = 0;
     Serial.println(F("Forward")); // to remove after test
     menu.forward();
     break;
-  case 8: // up
-    menu.prinheu();
+  case 56: // up
     arrayofButton[0].type = 1;
     Serial.println(F("up")); // to remove after test
     menu.up();
     break;
-  case 4: // left
-    menu.prinheu();
+  case 52: // left
     arrayofButton[0].type = 2;
     Serial.println(F("backard")); // to remove after test
     menu.backward();
     break;
-  case 2: // down
-    menu.prinheu();
+  case 50: // down
     arrayofButton[0].type = 3;
     Serial.println(F("Downward"));
     menu.down();
@@ -273,44 +263,42 @@ void select()
 
   switch (selectedButton)
   {
-  case 9: // +
-    menu.prinheu();
+  case 43: // +
     arrayofButton[1].type = 0;
     menu.updateValue(1);
     break;
-  case 7: // -
-    menu.prinheu();
+  case 45: // -
     arrayofButton[1].type = 1;
-    menu.updateValue(1);
+    menu.updateValue(0);
     break;
   }
 
   switch (selectedButton)
   {
-  case 11: // s7
+  case 117: // s7
     arrayofButton[2].type = 6;
     menu.selectEV(7);
     break;
-  case 12: // s6
+  case 121: // s6
     arrayofButton[2].type = 5;
     menu.selectEV(6);
-  case 13: // s5
+  case 116: // s5
     arrayofButton[2].type = 4;
     menu.selectEV(5);
     break;
-  case 14: // s4
+  case 114: // s4
     arrayofButton[2].type = 3;
     menu.selectEV(4);
     break;
-  case 15: // s3
+  case 101: // s3
     arrayofButton[2].type = 2;
     menu.selectEV(3);
     break;
-  case 16: // s2
+  case 122: // s2
     arrayofButton[2].type = 1;
     menu.selectEV(2);
     break;
-  case 17: // s1
+  case 97: // s1
     arrayofButton[2].type = 0;
     menu.selectEV(1);
     break;
@@ -357,19 +345,6 @@ void loop()
   loop_actualization();
   update_all_ev_state();
 
-  // if ev not in active state reset remining time to 0
-  // Serial.println(F("end of loop"));
-  // for (int i = 0; i < 8; i++)
-  //{
-  //  if (eeprom.Read(17 + (10 * (i + 1))) == 0)
-  //  {
-  //    if (arrayOfEV[i].remainingTimeOn != 0)
-  //    {
-  //      arrayOfEV[i].remainingTimeOn = 0;
-  //    }
-  //  }
-  //}
-  delay(2000); // to remove
   reset_button();
 }
 
@@ -475,6 +450,7 @@ void print_actual_time()
 
 void Init()
 {
+
   delay(1000);
   // Init com with arduino relay module
   inii2c(addr_mod_relay);
@@ -643,7 +619,8 @@ void other_parameter_screen()
   case 4:
     u8g.drawStr(5, 22, "Auto ete/hiver :");
     Serial.print(F("Auto ete/hiver : "));
-    activate_screen(160, 90, 22);
+    int mem_value = eeprom.Read(160);
+    activate_screen(mem_value, 90, 22);
     Serial.println(F(""));
     u8g.drawStr(5, 33, "Temp ete/hiver :");
     print_mem_value(70, 33, 161);
@@ -691,10 +668,6 @@ void manual_mode_screen()
   Serial.print(F(" Duree : "));
   Serial.print(menu.screenValue);
   Serial.println(F(""));
-
-  menu.ecran_princ_min = 60;
-  if (menu.selectedEV != 0 && menu.screenValue != 0)
-    arrayOfEV[menu.selectedEV - 1].remainingTimeOn = menu.screenValue;
 }
 
 void print_ev_state()
@@ -783,12 +756,9 @@ void state_screen()
   Serial.print(menu.selectedEV);
   Serial.println(F(""));
   u8g.drawStr(5, 33, "Etat : ");
-  activate_screen(17 + (10 * (menu.selectedEV + 1)), 70, 33);
-  if (eeprom.Read(17 + (10 * (menu.selectedEV + 1))) == 0)
-  {
-    arrayOfEV[menu.selectedEV - 1].remainingTimeOn = 0;
-    arrayOfEV[menu.selectedEV - 1].nextDayOn = 0;
-  }
+  Serial.print(F("Etat : "));
+  int mem_value = eeprom.Read(17 + (menu.selectedEV * 10));
+  activate_screen(mem_value, 70, 33);
   Serial.println(F(""));
 }
 
@@ -817,12 +787,6 @@ void stop_screen()
   Serial.print(F("Sortie  :"));
   Serial.print(menu.selectedEV);
   Serial.println(F(""));
-
-  if (menu.stop == 1)
-  {
-    arrayOfEV[menu.selectedEV - 1].remainingTimeOn = 0;
-    menu.stop = 0;
-  }
 }
 
 /*int line 11 22 33 44 55*/
@@ -838,27 +802,27 @@ void draw_cursor()
   Serial.println(F(""));
 }
 
-void update_all_ev_state()
+void draw_menu_edge()
 {
-  for (int i = 0; i < 8; i++)
-  {
-    set_output_state(i + 1);
-  }
+  int x = 0;
+  int y = 0;
+  int length = 168;
+  int height = 64;
+  int r = 1;
+  u8g.drawRFrame(x, y, length, height, r);
 }
 
-void set_output_state(int ev)
+void update_all_ev_state()
 {
-  if (eeprom.Read(17 + (10 * ev)) == 1)
+  for (int ev = 1; ev < 9; ev++)
   {
     if (arrayOfEV[ev - 1].remainingTimeOn == 0)
     {
-      send_to_module(addr_mod_relay, ev);
-      send_to_module(addr_mod_relay, 100);
+      arrayOfEV[ev - 1].OFF();
     }
     else
     {
-      send_to_module(addr_mod_relay, ev);
-      send_to_module(addr_mod_relay, 101);
+      arrayOfEV[ev - 1].ON();
     }
   }
 }
@@ -902,26 +866,31 @@ void update_auto_mode_with_ath21()
 
 void loop_actualization()
 {
-  if (menu.rtc_min != menu.rtc[1])
+  // if ev not in active state reset remining time to 0
+  for (int i = 0; i < 8; i++)
   {
-    // check remainining time for ev on
-    for (int i = 0; i < 8; i++)
+    if (eeprom.Read(17 + (10 * (i + 1))) == 0)
     {
-      if (arrayOfEV[i].remainingTimeOn != 0)
-      {
-        arrayOfEV[i].remainingTimeOn--;
-
-        if (arrayOfEV[i].remainingTimeOn < 0)
-        {
-          // Serial.println(F("set to 0 remaning time"));
-          arrayOfEV[i].remainingTimeOn = 0;
-        }
-      }
+      arrayOfEV[i].remainingTimeOn = 0;
+      arrayOfEV[i].nextDayOn = 0;
     }
-    menu.rtc_min = menu.rtc[1];
   }
 
-  horlact();
+  if (menu.delay == 1)
+  {
+    arrayOfEV[menu.selectedEV - 1].nextDayOn += menu.screenValue;
+    menu.delay = 0;
+  }
+  if (menu.manual == 1)
+  {
+    arrayOfEV[menu.selectedEV - 1].remainingTimeOn = menu.screenValue;
+    menu.manual = 0;
+  }
+  if (menu.stop == 1)
+  {
+    arrayOfEV[menu.selectedEV - 1].remainingTimeOn = 0;
+    menu.stop = 0;
+  }
 
   // Check Temperature and humidity at 12 o'clock if auto mode on with aht21
   int mem_value;
@@ -936,104 +905,31 @@ void loop_actualization()
       }
     }
   }
-}
 
-void horlact()
-{
-  if (menu.delay == 1)
+  // Update remanining time
+  if (menu.rtc_min != menu.rtc[1])
   {
-    arrayOfEV[menu.selectedEV - 1].nextDayOn += 1;
-    menu.delay = 0;
-  }
-  for (int i = 0; i < 8; i++)
-  {
-    int time_on = 0;
-    // Serial.println(eeprom.Read(12 + (10 * (i + 1))));
-    //  if mode auto on
-    if (eeprom.Read(12 + (10 * (i + 1))) == 1)
+
+    for (int i = 0; i < 8; i++)
     {
-      // if ev state is on
-      // Serial.println(eeprom.Read(17 + (10 * (i + 1))));
-      if (eeprom.Read(17 + (10 * (i + 1))) == 1)
+      if (arrayOfEV[i].remainingTimeOn != 0)
       {
-        // Serial.println(eeprom.Read(13 + (10 * (i + 1))));
-        //  if clock h == auto start time
-        if (menu.rtc[2] == eeprom.Read(13 + (10 * (i + 1))))
+        arrayOfEV[i].remainingTimeOn--;
+
+        if (arrayOfEV[i].remainingTimeOn < 0)
         {
-          if (arrayOfEV[i].remainingTimeOn == 0)
-          {
-            // if not started once set next day as today
-            if (arrayOfEV[i].nextDayOn == 0)
-            {
-              arrayOfEV[i].nextDayOn = menu.rtc[4];
-            }
-            // if clock day == next start day
-            if (arrayOfEV[i].nextDayOn == menu.rtc[4])
-            {
-              // mise en route
-              time_on = eeprom.Read(10 + (10 * (i + 1)));
-              if (time_on <= 0)
-              {
-                time_on = 0;
-              }
-              if (time_on >= max_time_on_ev)
-              {
-                time_on = max_time_on_ev;
-              }
-              arrayOfEV[i].remainingTimeOn = time_on;
-              // Serial.println(F("Next day calc i should not"));
-              calculate_next_day(i);
-            }
-          }
-        }
-      }
-      else
-      {
-        arrayOfEV[i].remainingTimeOn = 0;
-        if (arrayOfEV[i].nextDayOn == menu.rtc[4])
-        {
-          arrayOfEV[i].nextDayOn = 0;
+          arrayOfEV[i].remainingTimeOn = 0;
         }
       }
     }
+    menu.rtc_min = menu.rtc[1];
   }
-}
 
-void calculate_next_day(int i)
-{
-  int day_to_add;
-  int day_in_month;
-  int day;
-
-  day_to_add = eeprom.Read(11 + (10 * (i + 1)));
-  day = menu.rtc[4] + day_to_add;
-
-  switch (menu.rtc[5])
+  // Calculate next day on and remaining time
+  for (int i = 0; i < 8; i++)
   {
-  case 1: // 31
-  case 3:
-  case 5:
-  case 7:
-  case 8:
-  case 10:
-  case 12:
-    day_in_month = 31;
-    break;
-  case 2: // 28
-    day_in_month = 28;
-    break;
-  case 4:
-  case 6:
-  case 9:
-  case 11:
-    day_in_month = 30;
-    break;
+    arrayOfEV[i].updateRemainingTime(menu.rtc[4], menu.rtc[5], menu.rtc[6]);
   }
-  if (day > day_in_month)
-  {
-    day = day - day_in_month;
-  }
-  arrayOfEV[i].nextDayOn = day;
 }
 
 void print_mem_value(int col, int line, int mem_address)

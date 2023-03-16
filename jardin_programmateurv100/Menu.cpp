@@ -10,8 +10,6 @@ MENU::MENU()
     int rtc[7];
     int rtc_min = 0;
     int rtc_day = 0;
-    int ecran_princ_min = 0;
-    int ecran_princ_sec = 0;
     int screenValue = 0;
     actualScreen = 0;
     actualLine = 0;
@@ -21,6 +19,7 @@ MENU::MENU()
     delay = 0;
     stop = 0;
     inactive = 0;
+    manual = 0;
 }
 
 void MENU::initClock()
@@ -33,26 +32,6 @@ void MENU::getClock()
 {
     RTC.get(rtc, true);
     clock.updateTime(rtc); // to remove when real clock
-    Serial.print(rtc[2]);
-    Serial.print(":");
-    Serial.print(rtc[1]);
-    Serial.print(":");
-    Serial.print(rtc[0]);
-}
-
-void MENU::prinheu()
-{
-    ecran_princ_min = rtc[1] + 2;
-    if (ecran_princ_min >= 60)
-    {
-        ecran_princ_min = 0;
-    }
-    ecran_princ_sec = rtc[0];
-}
-
-void MENU::prinheu2()
-{
-    prinheu();
 }
 
 void MENU::forward()
@@ -125,6 +104,9 @@ void MENU::forward()
     case 6:
         moveCursor();
         action = 0;
+        break;
+    case 8:
+        manual = 1;
         break;
     case 10:
         delay = 1;
@@ -286,7 +268,11 @@ void MENU::selectEV(int ev)
     case 10:
     case 11:
         if (eeprom.Read(17 + (10 * ev)) == 1)
+        {
+            actualLine = 1;
             action = 1;
+        }
+
         break;
     case 9:
         action = 1;

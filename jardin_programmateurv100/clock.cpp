@@ -6,12 +6,8 @@ CLOCK::CLOCK()
     int secs = 0;
     int mins = -1; // it is -1 because when program start  the minutes are incremmented by 1 when secundes are zero
     int hrs = 0;
-    int days = 0;
-    int months = 0;
-    int years = 2023;
-    int milliDivsecs = 1000;
     unsigned long currmillis;
-    bool minlock = false;
+    unsigned long prevMillis;
 }
 
 // function of minutes
@@ -85,21 +81,22 @@ void CLOCK::updateMonths()
     }
 }
 
-void CLOCK::updateTime(int &rtc)
+void CLOCK::updateTime(int (&rtc)[7])
 {
-    currmillis = millis();                 // currmilis== current milliseconds
-                                           // obtain seconds from arduino time
-    secs = (millis() / milliDivsecs) % 60; // give seconds from miliseconds
+    // obtain seconds from arduino time
+    currmillis = (millis() / 1000.0); // currmilis== current milliseconds
+
     // next every time when secs is equal to 0 minutes are increased by 1 initial value of minutes is -1
-    if ((secs == 0) && (minlock == false)) // use minlock because otherwise when secs==0 mins increase more than +1
+    if (currmillis > prevMillis) // use minlock because otherwise when secs==0 mins increase more than +1
     {
+        prevMillis = currmillis;
+        secs++;
+    }
+    if (secs > 60)
+    {
+        secs = 0;
         mins = mins + 1; // when program start and secs==0 minutes become 0
         updateMin();     // call the minutes function to update the value of minutes
-        minlock = true;  // block minutes increasing and increase minutes by 1
-    }
-    else if (secs != 0)
-    {
-        minlock = false; // unlock minutes increasing
     }
 
     rtc[0] = secs;

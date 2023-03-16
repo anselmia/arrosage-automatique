@@ -12,8 +12,6 @@ public:
     int rtc[7];
     int rtc_min;
     int rtc_day;
-    int ecran_princ_min;
-    int ecran_princ_sec;
     int actualScreen;
     int actualLine;
     int cursorPos;
@@ -35,6 +33,7 @@ public:
     int selectedEV;
     int delay;
     int stop;
+    int manual;
     int inactive;
 };
 #endif

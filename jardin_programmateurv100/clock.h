@@ -13,6 +13,7 @@ private:
     void updateMonths();
 
 public:
+    unsigned long prevMillis;
     int secs;
     int mins;
     int hrs;
@@ -20,6 +21,6 @@ public:
     int months;
     int years;
     CLOCK();
-    void updateTime(int &rtc);
+    void updateTime(int (&rtc)[7]);
 };
 #endif

@@ -37,7 +37,6 @@ int BUTTON::readButton()
             buttonState = NOT_PRESSED;
             newButtonSelection = -1;
         }
-        break;
     }
 
     return newButtonSelection;
