@@ -17,8 +17,8 @@ public:
     int cursorPos;
     int redraw;
     int screenValue;
-    void initClock(int &error);
-    void getClock(int &error);
+    void initClock(int (&module_state)[2]);
+    void getClock(int (&module_state)[2]);
     void forward();
     void backward();
     void up();

@@ -61,13 +61,12 @@ Line 3 :
 BUTTON arrayofButton[3] = {BUTTON(pin_button_line1), BUTTON(pin_button_line2), BUTTON(pin_button_line3)};
 MENU menu = MENU();
 boolean aar = true; // mode wire endtransmission
-int module_state[3];
+int module_state[2];
 char buf[10];
 
 U8GLIB_SSD1309_128X64 u8g(13, 11, 10, 9, 8);
 Adafruit_AHTX0 aht;
 Adafruit_Sensor *aht_humidity, *aht_temp;
-int error = 0;
 
 void setup()
 {
@@ -78,7 +77,7 @@ void setup()
   DDRC |= _BV(2) | _BV(3); // POWER:Vcc Gnd
   PORTC |= _BV(3);         // VCC PINC3
   // initialisation de ds1307
-  menu.initClock(error);
+  menu.initClock(module_state);
 
   Serial.begin(9600);
   Init();
@@ -299,7 +298,7 @@ void select()
 void loop()
 {
   wdt_reset(); // reset watchdog
-  menu.getClock(error);
+  menu.getClock(module_state);
   // to uncomment with real button
   // for (int i = 0; i < 3; i++)
   //{
@@ -326,13 +325,12 @@ void loop()
   do
   {
     u8g.setFont(u8g_font_tpss); // Use standard character
-
     print_screen();
   } while (u8g.nextPage()); // Select the next page
 
   delay(100);
-  loop_actualization();
   check_inactiveScreen();
+  loop_actualization();
   reset_button();
   check_error();
   button_state = 0; // to remove
@@ -342,9 +340,9 @@ void check_inactiveScreen()
 {
   if (button_state == 1 && menu.inactive > 5)
   {
-    digitalWrite(pin_screen, HIGH);
     main_screen();
     menu.inactive = 0;
+    digitalWrite(pin_screen, HIGH);
   }
 
   if (button_state == 0 && menu.rtc_min != menu.rtc[1])
@@ -363,7 +361,7 @@ void reset_button()
 
 void check_error()
 {
-  if (error == 1)
+  if (module_state[0] > 0 || module_state[1] > 0)
   {
     digitalWrite(pin_led, HIGH);
   }
@@ -385,6 +383,7 @@ void print_screen()
       {
       case 0:
         main_screen();
+        menu.redraw = -1;
         break;
       case 1:
         menu_screen();
@@ -431,45 +430,25 @@ void print_screen()
         menu.redraw = -1;
         draw_cursor();
         break;
-      default:
-        main_screen();
-        menu.redraw = 1;
-        break;
       }
     }
   }
 }
 
-void inii2c(int adr)
+void inii2c(int adr, int i)
 {
   Wire.beginTransmission(adr);
-  error = Wire.endTransmission(aar);
+  module_state[i] = Wire.endTransmission(aar);
 }
 
 void print_actual_time()
 {
-  Serial.print(menu.rtc[4]);
-  Serial.print(F("/"));
-  Serial.print(menu.rtc[5]);
-  Serial.print(F("/"));
-  Serial.print(menu.rtc[6]);
-  Serial.println(F(""));
-  Serial.print(menu.rtc[2]);
-  Serial.print(F(":"));
-  Serial.print(menu.rtc[1]);
-  Serial.print(F(":"));
-  Serial.print(menu.rtc[0]);
-  Serial.println(F(""));
-  print_on_screen(7, 11, menu.rtc[4]);
-  u8g.drawStr(20, 11, "/");
-  print_on_screen(28, 11, menu.rtc[5]);
-  u8g.drawStr(40, 11, "/");
-  print_on_screen(48, 11, menu.rtc[6]);
-  print_on_screen(7, 22, menu.rtc[2]);
-  u8g.drawStr(20, 22, ":");
-  print_on_screen(25, 22, menu.rtc[1]);
-  u8g.drawStr(40, 33, ":");
-  print_on_screen(45, 22, menu.rtc[0]);
+  sprintf(buf, "%02d/%02d/%04d", menu.rtc[4], menu.rtc[5], menu.rtc[6]);
+  u8g.drawStr(20, 11, buf);
+  Serial.println(buf);
+  sprintf(buf, "%02d:%02d:%02d", menu.rtc[2], menu.rtc[1], menu.rtc[0]);
+  u8g.drawStr(40, 11, buf);
+  Serial.println(buf);
 }
 
 void Init()
@@ -477,23 +456,22 @@ void Init()
 
   delay(1000);
   // Init com with ds1307
-  inii2c(0x68);
-  if (error != 0)
-  {
-    module_state[1] = 1;
-  }
+  inii2c(0x68, 0);
+
   // Init com with aht21 sensor
-  inii2c(0x38);
-  if (error != 0)
-  {
-    module_state[2] = 1;
-  }
+  inii2c(0x38, 1);
+
   // Init EV
   for (int i = 0; i < 5; i++)
     arrayOfEV[i].init();
 
-  // set output 1 for error led
+  // set output for error led an screen
   pinMode(pin_led, OUTPUT);
+  pinMode(pin_screen, OUTPUT);
+
+  // SWitch On the screen
+  digitalWrite(pin_screen, HIGH);
+  delay(200);
 
   // init_memory();
   u8g.setCursorFont(u8g_font_cursor);
@@ -506,7 +484,7 @@ void Init()
     u8g.drawStr(5, 11, "Initialisation"); // 12 line
     if (module_state[1] == 0)
     {
-      menu.getClock(error);
+      menu.getClock(module_state);
       print_actual_time();
     }
     else
@@ -521,7 +499,7 @@ void Init()
 void main_screen()
 {
   u8g.disableCursor();
-  if (error == 1)
+  if (module_state[0] == 1)
   {
     u8g.drawStr(20, 11, "erreur");
     Serial.println(F("erreur"));
@@ -597,7 +575,7 @@ void auto_mode_screen()
 
 void clock_parameter_screen()
 {
-  menu.getClock(error);
+  menu.getClock(module_state);
   u8g.drawStr(10, 11, " Horloge ");
   Serial.println(F(" Horloge "));
   u8g.drawStr(5, 22, " Date :");
@@ -738,24 +716,6 @@ void print_ev_state()
   Serial.print(F(", "));
   Serial.print(arrayOfEV[4].nextDayOn);
   Serial.println(F(""));
-  u8g.drawStr(40, 55, "6 : ");
-  print_on_screen(45, 55, arrayOfEV[5].remainingTimeOn);
-  u8g.drawStr(55, 55, ",");
-  print_on_screen(70, 55, arrayOfEV[5].nextDayOn);
-  Serial.print(F(" 6 : "));
-  Serial.print(arrayOfEV[5].remainingTimeOn);
-  Serial.print(F(", "));
-  Serial.print(arrayOfEV[5].nextDayOn);
-  Serial.println(F(""));
-  u8g.drawStr(85, 33, "7 : ");
-  print_on_screen(90, 33, arrayOfEV[6].remainingTimeOn);
-  u8g.drawStr(100, 33, ",");
-  print_on_screen(115, 33, arrayOfEV[6].nextDayOn);
-  Serial.print(F("7 : "));
-  Serial.print(arrayOfEV[6].remainingTimeOn);
-  Serial.print(F(", "));
-  Serial.print(arrayOfEV[6].nextDayOn);
-  Serial.println(F(""));
 }
 
 void state_screen()
@@ -865,10 +825,10 @@ void update_auto_mode_with_ath21()
     for (int i = 0; i < 5; i++)
       arrayOfEV[i].updateSeason(timeon, freq);
 
-    error = 0;
+    module_state[1] = 0;
   }
   else
-    error = 1;
+    module_state[1] = 1;
 }
 
 void loop_actualization()

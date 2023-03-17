@@ -22,6 +22,9 @@ void EV::ON()
 {
     evState = 1;
     digitalWrite(evPin, HIGH);
+    Serial.print(F("ev "));
+    Serial.print(evPin);
+    Serial.print(" ON");
 }
 
 void EV::OFF()
