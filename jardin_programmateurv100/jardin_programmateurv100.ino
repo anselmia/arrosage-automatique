@@ -19,21 +19,19 @@ int versio = 1.0;
 
 MYEEPROM eeprom = MYEEPROM();
 /* EV pins*/
-const int pin_ev1 = 2;
-const int pin_ev2 = 3;
-const int pin_ev3 = 4;
-const int pin_ev4 = 5;
-const int pin_ev5 = 6;
-const int pin_ev6 = 7;
-const int pin_ev7 = 8;
+const int pin_ev1 = 1;
+const int pin_ev2 = 2;
+const int pin_ev3 = 3;
+const int pin_ev4 = 4;
+const int pin_ev5 = 5;
 
 /* Error led pins*/
-const int pin_led = 1;
+const int pin_led = 6;
 
 /* Pin alim scrren */
-const int pin_screen = 9;
+const int pin_screen = 7;
 
-EV arrayOfEV[7] = {EV(pin_ev1, 1), EV(pin_ev2, 2), EV(pin_ev3, 3), EV(pin_ev4, 4), EV(pin_ev5, 5), EV(pin_ev6, 6), EV(pin_ev7, 7)};
+EV arrayOfEV[5] = {EV(pin_ev1, 1), EV(pin_ev2, 2), EV(pin_ev3, 3), EV(pin_ev4, 4), EV(pin_ev5, 5)};
 // SCREEN screen;
 // bouton
 int button_state = 0;
@@ -66,7 +64,7 @@ boolean aar = true; // mode wire endtransmission
 int module_state[3];
 char buf[10];
 
-U8GLIB_SSD1309_128X64 u8g(13, 11, 10, U8G_PIN_NONE);
+U8GLIB_SSD1309_128X64 u8g(13, 11, 10, 9, 8);
 Adafruit_AHTX0 aht;
 Adafruit_Sensor *aht_humidity, *aht_temp;
 int error = 0;
@@ -377,11 +375,11 @@ void print_screen()
 {
   if (menu.inactive < 5)
   {
-    if (menu.action == 0)
+    if (menu.redraw == 0)
     {
       draw_cursor();
     }
-    else if (menu.action == 1)
+    else if (menu.redraw == 1)
     {
       switch (menu.actualScreen)
       {
@@ -390,38 +388,55 @@ void print_screen()
         break;
       case 1:
         menu_screen();
+        menu.redraw = -1;
+        draw_cursor();
         break;
       case 2:
         parameter_screen();
+        menu.redraw = -1;
+        draw_cursor();
         break;
       case 4:
         auto_mode_screen();
+        menu.redraw = -1;
+        draw_cursor();
         break;
       case 6:
         clock_parameter_screen();
+        menu.redraw = -1;
+        draw_cursor();
         break;
       case 7:
         other_parameter_screen();
+        menu.redraw = -1;
+        draw_cursor();
         break;
       case 8:
         manual_mode_screen();
+        menu.redraw = -1;
+        draw_cursor();
         break;
       case 9:
         state_screen();
+        menu.redraw = -1;
+        draw_cursor();
         break;
       case 10:
         delay_screen();
+        menu.redraw = -1;
+        draw_cursor();
         break;
       case 11:
         stop_screen();
+        menu.redraw = -1;
+        draw_cursor();
         break;
       default:
         main_screen();
+        menu.redraw = 1;
         break;
       }
-      draw_cursor();
     }
-    menu.action = -1;
   }
 }
 
@@ -474,13 +489,15 @@ void Init()
     module_state[2] = 1;
   }
   // Init EV
-  for (int i = 0; i < 7; i++)
+  for (int i = 0; i < 5; i++)
     arrayOfEV[i].init();
 
   // set output 1 for error led
   pinMode(pin_led, OUTPUT);
 
   // init_memory();
+  u8g.setCursorFont(u8g_font_cursor);
+  u8g.setCursorStyle(144);
 
   u8g.firstPage(); // SÃ©lectionne la 1er page mÃ©moire de l'Ã©cran
   do
@@ -503,6 +520,7 @@ void Init()
 
 void main_screen()
 {
+  u8g.disableCursor();
   if (error == 1)
   {
     u8g.drawStr(20, 11, "erreur");
@@ -786,11 +804,13 @@ void stop_screen()
 /*int line 11 22 33 44 55*/
 void draw_cursor()
 {
-  int x = 0;
-  int y = menu.actualLine * 11;
-  int length = 4;
-  int height = 11;
-  u8g.drawBox(x, y, length, height);
+  u8g.enableCursor();
+  u8g.setCursorPos(2, menu.actualLine * 11);
+  // int x = 0;
+  // int y = menu.actualLine * 11;
+  // int length = 4;
+  // int height = 11;
+  // u8g.drawBox(x, y, length, height);
   Serial.print(F("C"));
   Serial.print(menu.actualLine);
   Serial.println(F(""));
@@ -842,7 +862,7 @@ void update_auto_mode_with_ath21()
       freq = eeprom.Read(mem_sumerFreq);
     }
 
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 5; i++)
       arrayOfEV[i].updateSeason(timeon, freq);
 
     error = 0;
@@ -893,7 +913,7 @@ void loop_actualization()
     menu.rtc_min = menu.rtc[1];
 
     // Calculate next day on and remaining time
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 5; i++)
     {
       arrayOfEV[i].updateRemainingTime(menu.rtc[2], menu.rtc[4], menu.rtc[5], menu.rtc[6]);
       arrayOfEV[i].update_state();

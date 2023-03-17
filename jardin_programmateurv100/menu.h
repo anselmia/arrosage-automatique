@@ -15,7 +15,7 @@ public:
     int actualScreen;
     int actualLine;
     int cursorPos;
-    int action;
+    int redraw;
     int screenValue;
     void initClock(int &error);
     void getClock(int &error);

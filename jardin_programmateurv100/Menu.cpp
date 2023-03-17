@@ -15,7 +15,7 @@ MENU::MENU()
     actualLine = 0;
     cursorPos = 0;
     selectedEV = 1;
-    action = 1;
+    redraw = 1;
     delay = 0;
     stop = 0;
     inactive = 0;
@@ -42,14 +42,14 @@ void MENU::getClock(int &error)
 
 void MENU::forward()
 {
-    action = -1;
+    redraw = -1;
     screenValue = 0;
     switch (actualScreen)
     {
     case 0:
         actualScreen = 1;
         actualLine = 0;
-        action = 1;
+        redraw = 1;
         break;
     case 1:
         switch (actualLine)
@@ -57,31 +57,31 @@ void MENU::forward()
         case 0:
             actualScreen = 2;
             actualLine = 1;
-            action = 1;
+            redraw = 1;
             break;
         case 1:
             actualScreen = 8;
             actualLine = 2;
             selectedEV = 1;
-            action = 1;
+            redraw = 1;
             break;
         case 2:
             actualScreen = 9;
             selectedEV = 1;
             actualLine = 2;
-            action = 1;
+            redraw = 1;
             break;
         case 3:
             actualScreen = 10;
             selectedEV = 1;
             actualLine = 2;
-            action = 1;
+            redraw = 1;
             break;
         case 4:
             actualScreen = 11;
             selectedEV = 1;
             actualLine = 2;
-            action = 1;
+            redraw = 1;
             break;
         }
         break;
@@ -92,24 +92,24 @@ void MENU::forward()
             actualScreen = 4;
             selectedEV = 1;
             actualLine = 1;
-            action = 1;
+            redraw = 1;
             break;
         case 2:
             cursorPos = 0;
             actualScreen = 6;
             actualLine = 1;
-            action = 1;
+            redraw = 1;
             break;
         case 3:
             actualScreen = 7;
             actualLine = 1;
-            action = 1;
+            redraw = 1;
             break;
         }
         break;
     case 6:
         moveCursor();
-        action = 0;
+        redraw = 0;
         break;
     case 8:
         manual = 1;
@@ -125,13 +125,13 @@ void MENU::forward()
 
 void MENU::backward()
 {
-    action = -1;
+    redraw = -1;
     switch (actualScreen)
     {
     case 1:
         actualScreen = 0;
         actualLine = 0;
-        action = 1;
+        redraw = 1;
         break;
     case 2:
     case 8:
@@ -141,7 +141,7 @@ void MENU::backward()
         selectedEV = 0;
         actualScreen = 1;
         actualLine = 0;
-        action = 1;
+        redraw = 1;
         screenValue = 0;
         break;
 
@@ -151,39 +151,39 @@ void MENU::backward()
         selectedEV = 0;
         actualScreen = 2;
         actualLine = 1;
-        action = 1;
+        redraw = 1;
         break;
     }
 }
 
 void MENU::up()
 {
-    action = -1;
+    redraw = -1;
     switch (actualScreen)
     {
     case 1:
-        action = 0;
+        redraw = 0;
         if (actualLine == 0)
             actualLine = 4;
         else
             actualLine--;
         break;
     case 2:
-        action = 0;
+        redraw = 0;
         if (actualLine == 1)
             actualLine = 3;
         else
             actualLine--;
         break;
     case 4:
-        action = 0;
+        redraw = 0;
         if (actualLine == 1)
             actualLine = 4;
         else
             actualLine--;
         break;
     case 6:
-        action = 0;
+        redraw = 0;
         if (actualLine == 1)
             actualLine = 3;
         else
@@ -194,17 +194,17 @@ void MENU::up()
         if (actualLine == 1)
         {
             actualLine = 7;
-            action = 1;
+            redraw = 1;
         }
         else if (actualLine == 6)
         {
             actualLine = 4;
-            action = 1;
+            redraw = 1;
         }
         else
         {
             actualLine--;
-            action = 0;
+            redraw = 0;
         }
         break;
     }
@@ -212,32 +212,32 @@ void MENU::up()
 
 void MENU::down()
 {
-    action = -1;
+    redraw = -1;
     switch (actualScreen)
     {
     case 1:
-        action = 0;
+        redraw = 0;
         if (actualLine == 4)
             actualLine = 0;
         else
             actualLine++;
         break;
     case 2:
-        action = 0;
+        redraw = 0;
         if (actualLine == 3)
             actualLine = 1;
         else
             actualLine++;
         break;
     case 4:
-        action = 0;
+        redraw = 0;
         if (actualLine == 4)
             actualLine = 1;
         else
             actualLine++;
         break;
     case 6:
-        action = 0;
+        redraw = 0;
         if (actualLine == 1)
             actualLine = 3;
         else
@@ -248,17 +248,17 @@ void MENU::down()
         if (actualLine == 7)
         {
             actualLine = 1;
-            action = 1;
+            redraw = 1;
         }
         else if (actualLine == 4)
         {
             actualLine = 6;
-            action = 1;
+            redraw = 1;
         }
         else
         {
             actualLine++;
-            action = 0;
+            redraw = 0;
         }
         break;
     }
@@ -276,19 +276,19 @@ void MENU::selectEV(int ev)
         if (eeprom.Read(mem_state + (10 * ev)) == 1)
         {
             actualLine = 1;
-            action = 1;
+            redraw = 1;
         }
 
         break;
     case 9:
-        action = 1;
+        redraw = 1;
         break;
     }
 }
 
 void MENU::updateValue(int dir, int value = 0)
 {
-    action = -1;
+    redraw = -1;
     int mem_value;
     int max_value;
     int mem_adress = -1;
@@ -301,25 +301,25 @@ void MENU::updateValue(int dir, int value = 0)
             mem_adress = mem_autostate + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
             max_value = 1;
-            action = 1;
+            redraw = 1;
             break;
         case 2:
             mem_adress = mem_autoTimeOn + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
             max_value = 14;
-            action = 1;
+            redraw = 1;
             break;
         case 3:
             mem_adress = mem_autoFreq + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
             max_value = 20;
-            action = 1;
+            redraw = 1;
             break;
         case 4:
             mem_adress = mem_autoStartHour + (10 * selectedEV);
             mem_value = eeprom.Read(mem_adress);
             max_value = 23;
-            action = 1;
+            redraw = 1;
             break;
         }
         break;
@@ -353,7 +353,7 @@ void MENU::updateValue(int dir, int value = 0)
                 // RTC.set(DS1307_DATE, day);
                 // RTC.start();
                 clock.days = day; // to remove
-                action = 1;
+                redraw = 1;
                 break;
             case 1: // month
                 int month;
@@ -378,7 +378,7 @@ void MENU::updateValue(int dir, int value = 0)
                 // RTC.set(DS1307_MTH, month);
                 // RTC.start();
                 clock.months = month; // to remove
-                action = 1;
+                redraw = 1;
                 break;
             case 2: // annee
                 int year;
@@ -401,7 +401,7 @@ void MENU::updateValue(int dir, int value = 0)
                 // RTC.set(DS1307_YR, year);
                 // RTC.start();
                 clock.years = year; // to remove
-                action = 1;
+                redraw = 1;
                 break;
             }
             break;
@@ -431,7 +431,7 @@ void MENU::updateValue(int dir, int value = 0)
                 // RTC.set(DS1307_HR, hour);
                 // RTC.start();
                 clock.hrs = hour; // to remove
-                action = 1;
+                redraw = 1;
                 break;
 
             case 1: // minute
@@ -457,14 +457,14 @@ void MENU::updateValue(int dir, int value = 0)
                 // RTC.set(DS1307_MIN, minute);
                 // RTC.start();
                 clock.mins = minute; // to remove
-                action = 1;
+                redraw = 1;
                 break;
             case 2: // seconde
                 // RTC.stop();
                 // RTC.set(DS1307_SEC, 0);
                 // RTC.start();
                 clock.secs = 0; // to remove
-                action = 1;
+                redraw = 1;
                 break;
             }
         }
@@ -476,37 +476,37 @@ void MENU::updateValue(int dir, int value = 0)
             mem_adress = mem_autoSeason;
             mem_value = eeprom.Read(mem_adress);
             max_value = 1;
-            action = 1;
+            redraw = 1;
             break;
         case 2:
             mem_adress = mem_tempSeason;
             mem_value = eeprom.Read(mem_adress);
             max_value = 35;
-            action = 1;
+            redraw = 1;
             break;
         case 3:
             mem_adress = mem_sumerTimeon;
             mem_value = eeprom.Read(mem_adress);
             max_value = 20;
-            action = 1;
+            redraw = 1;
             break;
         case 4:
             mem_adress = mem_sumerFreq;
             mem_value = eeprom.Read(mem_adress);
             max_value = 14;
-            action = 1;
+            redraw = 1;
             break;
         case 6:
             mem_adress = mem_winterTimeon;
             mem_value = eeprom.Read(mem_adress);
             max_value = 20;
-            action = 1;
+            redraw = 1;
             break;
         case 7:
             mem_adress = mem_winterFreq;
             mem_value = eeprom.Read(mem_adress);
             max_value = 14;
-            action = 1;
+            redraw = 1;
             break;
         }
         break;
@@ -514,26 +514,26 @@ void MENU::updateValue(int dir, int value = 0)
         screenValue += 5;
         if (screenValue > 20)
             screenValue = 0;
-        action = 1;
+        redraw = 1;
         break;
     case 9:
         mem_adress = mem_state + (10 * selectedEV);
         mem_value = eeprom.Read(mem_adress);
         max_value = 1;
-        action = 1;
+        redraw = 1;
         break;
     case 10:
         screenValue += 1;
         if (screenValue > 14)
             screenValue = 0;
-        action = 1;
+        redraw = 1;
         break;
     case 11:
         if (screenValue == 0)
             screenValue = 1;
         else
             screenValue = 0;
-        action = 1;
+        redraw = 1;
         break;
     }
 
