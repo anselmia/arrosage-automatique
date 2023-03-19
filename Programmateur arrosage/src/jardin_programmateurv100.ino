@@ -19,11 +19,12 @@ int versio = 1.0;
 
 MYEEPROM eeprom = MYEEPROM();
 /* EV pins*/
-const int pin_ev1 = 1;
-const int pin_ev2 = 2;
-const int pin_ev3 = 3;
-const int pin_ev4 = 4;
-const int pin_ev5 = 5;
+const int pin_ev1 = 0;
+const int pin_ev2 = 1;
+const int pin_ev3 = 2;
+const int pin_ev4 = 3;
+const int pin_ev5 = 4;
+const int pin_ev6 = 5;
 
 /* Error led pins*/
 const int pin_led = 6;
@@ -31,7 +32,7 @@ const int pin_led = 6;
 /* Pin alim scrren */
 const int pin_screen = 7;
 
-EV arrayOfEV[5] = {EV(pin_ev1, 1), EV(pin_ev2, 2), EV(pin_ev3, 3), EV(pin_ev4, 4), EV(pin_ev5, 5)};
+EV arrayOfEV[6] = {EV(pin_ev1, 1), EV(pin_ev2, 2), EV(pin_ev3, 3), EV(pin_ev4, 4), EV(pin_ev5, 5), EV(pin_ev6, 6)};
 // SCREEN screen;
 // bouton
 int button_state = 0;
@@ -83,57 +84,57 @@ void setup()
   Init();
 }
 
-// void init_memory()
-//{
-//   eeprom.write(20, 0);
-//   eeprom.write(30, 0);
-//   eeprom.write(40, 0);
-//   eeprom.write(50, 0);
-//   eeprom.write(60, 0);
-//   eeprom.write(70, 0);
-//   eeprom.write(80, 0);
-//   eeprom.write(90, 0);
-//   eeprom.write(21, 0);
-//   eeprom.write(31, 0);
-//   eeprom.write(41, 0);
-//   eeprom.write(51, 0);
-//   eeprom.write(61, 0);
-//   eeprom.write(71, 0);
-//   eeprom.write(81, 0);
-//   eeprom.write(91, 0);
-//   eeprom.write(22, 0);
-//   eeprom.write(32, 0);
-//   eeprom.write(42, 0);
-//   eeprom.write(52, 0);
-//   eeprom.write(62, 0);
-//   eeprom.write(72, 0);
-//   eeprom.write(82, 0);
-//   eeprom.write(92, 0);
-//   eeprom.write(23, 0);
-//   eeprom.write(33, 0);
-//   eeprom.write(43, 0);
-//   eeprom.write(53, 0);
-//   eeprom.write(63, 0);
-//   eeprom.write(73, 0);
-//   eeprom.write(83, 0);
-//   eeprom.write(93, 0);
-//   eeprom.write(27, 0);
-//   eeprom.write(37, 0);
-//   eeprom.write(47, 0);
-//   eeprom.write(57, 0);
-//   eeprom.write(67, 0);
-//   eeprom.write(77, 0);
-//   eeprom.write(87, 0);
-//   eeprom.write(97, 0);
-//   eeprom.write(150, 0);
-//   eeprom.write(151, 0);
-//   eeprom.write(160, 0);
-//   eeprom.write(161, 0);
-//   eeprom.write(162, 0);
-//   eeprom.write(163, 0);
-//   eeprom.write(164, 0);
-//   eeprom.write(165, 0);
-// }
+void Init()
+{
+
+  delay(1000);
+  // Init com with ds1307
+  inii2c(0x68, 0);
+
+  // Init com with aht21 sensor
+  inii2c(0x38, 1);
+
+  // Init EV
+  for (int i = 0; i < 6; i++)
+    arrayOfEV[i].init();
+
+  // set output for error led an screen
+  pinMode(pin_led, OUTPUT);
+  pinMode(pin_screen, OUTPUT);
+
+  // SWitch On the screen
+  digitalWrite(pin_screen, HIGH);
+  delay(200);
+
+  // Init memory
+  // eeprom.init_memory();
+  u8g.setCursorFont(u8g_font_cursor);
+  u8g.setCursorStyle(144);
+
+  u8g.firstPage(); // SÃ©lectionne la 1er page mÃ©moire de l'Ã©cran
+  do
+  {
+    u8g.setFont(u8g_font_tpss);           // Utilise la police de caractÃ¨re standard
+    u8g.drawStr(5, 11, "Initialisation"); // 12 line
+    if (module_state[1] == 0)
+    {
+      menu.getClock(module_state);
+      print_actual_time();
+    }
+    else
+    {
+      u8g.drawStr(10, 22, "erreur horloge");
+    }
+    u8g.drawStr(5, 44, "version");
+    print_on_screen(50, 44, versio);
+  } while (u8g.nextPage());
+}
+
+void inii2c(int adr, int i)
+{
+  Wire.beginTransmission(adr);
+  module_state[i] = Wire.endTransmission(aar);
+}
 
 void select_button(int selected_button)
 {
@@ -177,30 +178,26 @@ void select_button(int selected_button)
 
   switch (arrayofButton[0].getSelection())
   {
-  case 1: // s7
-    arrayofButton[2].type = 6;
-    menu.selectEV(7);
-    break;
-  case 2: // s6
+  case 1: // s6
     arrayofButton[2].type = 5;
     menu.selectEV(6);
-  case 3: // s5
+    break;
+  case 2: // s5
     arrayofButton[2].type = 4;
     menu.selectEV(5);
-    break;
-  case 4: // s4
+  case 3: // s4
     arrayofButton[2].type = 3;
     menu.selectEV(4);
     break;
-  case 5: // s3
+  case 4: // s3
     arrayofButton[2].type = 2;
     menu.selectEV(3);
     break;
-  case 6: // s2
+  case 5: // s2
     arrayofButton[2].type = 1;
     menu.selectEV(2);
     break;
-  case 7: // s1
+  case 6: // s1
     arrayofButton[2].type = 0;
     menu.selectEV(1);
     break;
@@ -345,7 +342,7 @@ void check_inactiveScreen()
     digitalWrite(pin_screen, HIGH);
   }
 
-  if (button_state == 0 && menu.rtc_min != menu.rtc[1])
+  if (button_state == 0 && menu.rtc_min != menu.min)
     menu.inactive++;
 
   if (menu.inactive > 5)
@@ -435,67 +432,6 @@ void print_screen()
   }
 }
 
-void inii2c(int adr, int i)
-{
-  Wire.beginTransmission(adr);
-  module_state[i] = Wire.endTransmission(aar);
-}
-
-void print_actual_time()
-{
-  sprintf(buf, "%02d/%02d/%04d", menu.rtc[4], menu.rtc[5], menu.rtc[6]);
-  u8g.drawStr(20, 11, buf);
-  Serial.println(buf);
-  sprintf(buf, "%02d:%02d:%02d", menu.rtc[2], menu.rtc[1], menu.rtc[0]);
-  u8g.drawStr(40, 11, buf);
-  Serial.println(buf);
-}
-
-void Init()
-{
-
-  delay(1000);
-  // Init com with ds1307
-  inii2c(0x68, 0);
-
-  // Init com with aht21 sensor
-  inii2c(0x38, 1);
-
-  // Init EV
-  for (int i = 0; i < 5; i++)
-    arrayOfEV[i].init();
-
-  // set output for error led an screen
-  pinMode(pin_led, OUTPUT);
-  pinMode(pin_screen, OUTPUT);
-
-  // SWitch On the screen
-  digitalWrite(pin_screen, HIGH);
-  delay(200);
-
-  // init_memory();
-  u8g.setCursorFont(u8g_font_cursor);
-  u8g.setCursorStyle(144);
-
-  u8g.firstPage(); // SÃ©lectionne la 1er page mÃ©moire de l'Ã©cran
-  do
-  {
-    u8g.setFont(u8g_font_tpss);           // Utilise la police de caractÃ¨re standard
-    u8g.drawStr(5, 11, "Initialisation"); // 12 line
-    if (module_state[1] == 0)
-    {
-      menu.getClock(module_state);
-      print_actual_time();
-    }
-    else
-    {
-      u8g.drawStr(10, 22, "erreur horloge");
-    }
-    u8g.drawStr(5, 44, "version");
-    print_on_screen(50, 44, versio);
-  } while (u8g.nextPage());
-}
-
 void main_screen()
 {
   u8g.disableCursor();
@@ -509,6 +445,74 @@ void main_screen()
     print_actual_time();
     print_ev_state();
   }
+}
+
+void print_actual_time()
+{
+  sprintf(buf, "%02d/%02d/%04d", menu.day, menu.month, menu.year);
+  u8g.drawStr(20, 11, buf);
+  Serial.println(buf);
+  sprintf(buf, "%02d:%02d:%02d", menu.hour, menu.min, menu.sec);
+  u8g.drawStr(40, 11, buf);
+  Serial.println(buf);
+}
+
+void print_ev_state()
+{
+  u8g.drawStr(5, 33, "1 : ");
+  print_on_screen(10, 33, arrayOfEV[0].remainingTimeOn);
+  u8g.drawStr(20, 33, ",");
+  print_on_screen(25, 22, arrayOfEV[0].nextDayOn);
+  Serial.print(F("1 : "));
+  Serial.print(arrayOfEV[0].remainingTimeOn);
+  Serial.print(F(", "));
+  Serial.print(arrayOfEV[0].nextDayOn);
+  Serial.println(F(""));
+  u8g.drawStr(5, 44, "2 : ");
+  print_on_screen(10, 44, arrayOfEV[1].remainingTimeOn);
+  u8g.drawStr(20, 44, ",");
+  print_on_screen(25, 44, arrayOfEV[1].nextDayOn);
+  Serial.print(F("2 : "));
+  Serial.print(arrayOfEV[1].remainingTimeOn);
+  Serial.print(F(", "));
+  Serial.print(arrayOfEV[1].nextDayOn);
+  Serial.println(F(""));
+  u8g.drawStr(5, 55, "3 : ");
+  print_on_screen(10, 55, arrayOfEV[2].remainingTimeOn);
+  u8g.drawStr(20, 55, ",");
+  print_on_screen(25, 55, arrayOfEV[2].nextDayOn);
+  Serial.print(F("3 : "));
+  Serial.print(arrayOfEV[2].remainingTimeOn);
+  Serial.print(F(", "));
+  Serial.print(arrayOfEV[2].nextDayOn);
+  Serial.println(F(""));
+  u8g.drawStr(40, 33, "sortie 4:");
+  print_on_screen(45, 33, arrayOfEV[3].remainingTimeOn);
+  u8g.drawStr(55, 33, ",");
+  print_on_screen(70, 33, arrayOfEV[3].nextDayOn);
+  Serial.print(F("4 : "));
+  Serial.print(arrayOfEV[3].remainingTimeOn);
+  Serial.print(F(", "));
+  Serial.print(arrayOfEV[3].nextDayOn);
+  Serial.println(F(""));
+  u8g.drawStr(40, 44, "5 : ");
+  print_on_screen(45, 44, arrayOfEV[4].remainingTimeOn);
+  u8g.drawStr(55, 44, ",");
+  print_on_screen(70, 44, arrayOfEV[4].nextDayOn);
+  Serial.print(F("5 : "));
+  Serial.print(arrayOfEV[4].remainingTimeOn);
+  Serial.print(F(", "));
+  Serial.print(arrayOfEV[4].nextDayOn);
+  Serial.println(F(""));
+  u8g.drawStr(40, 55, "6 : ");
+  print_on_screen(45, 55, arrayOfEV[5].remainingTimeOn);
+  u8g.drawStr(55, 55, ",");
+  print_on_screen(70, 55, arrayOfEV[5].nextDayOn);
+  Serial.print(F("6 : "));
+  Serial.print(arrayOfEV[5].remainingTimeOn);
+  Serial.print(F(", "));
+  Serial.print(arrayOfEV[5].nextDayOn);
+  Serial.println(F(""));
 }
 
 void menu_screen()
@@ -579,30 +583,30 @@ void clock_parameter_screen()
   u8g.drawStr(10, 11, " Horloge ");
   Serial.println(F(" Horloge "));
   u8g.drawStr(5, 22, " Date :");
-  print_on_screen(7, 22, menu.rtc[4]);
+  print_on_screen(7, 22, menu.day);
   u8g.drawStr(20, 22, "/");
-  print_on_screen(28, 22, menu.rtc[5]);
+  print_on_screen(28, 22, menu.month);
   u8g.drawStr(40, 22, "/");
-  print_on_screen(48, 22, menu.rtc[6]);
+  print_on_screen(48, 22, menu.year);
   Serial.print(F(" Date : "));
-  Serial.print(menu.rtc[4]);
+  Serial.print(menu.day);
   Serial.print(F("/"));
-  Serial.print(menu.rtc[5]);
+  Serial.print(menu.month);
   Serial.print(F("/"));
-  Serial.print(menu.rtc[6]);
+  Serial.print(menu.year);
   Serial.println(F(""));
   u8g.drawStr(5, 44, " Heure :");
-  print_on_screen(7, 44, menu.rtc[2]);
+  print_on_screen(7, 44, menu.hour);
   u8g.drawStr(20, 44, ":");
-  print_on_screen(25, 44, menu.rtc[1]);
+  print_on_screen(25, 44, menu.min);
   u8g.drawStr(40, 44, ":");
-  print_on_screen(45, 44, menu.rtc[0]);
+  print_on_screen(45, 44, menu.sec);
   Serial.print(F(" Heure : "));
-  Serial.print(menu.rtc[2]);
+  Serial.print(menu.hour);
   Serial.print(F(":"));
-  Serial.print(menu.rtc[1]);
+  Serial.print(menu.min);
   Serial.print(F(":"));
-  Serial.print(menu.rtc[0]);
+  Serial.print(menu.sec);
   Serial.println(F(""));
 }
 
@@ -616,6 +620,7 @@ void other_parameter_screen()
   case 2:
   case 3:
   case 4:
+  {
     u8g.drawStr(5, 22, "Auto ete/hiver :");
     Serial.print(F("Auto ete/hiver : "));
     int mem_value = eeprom.Read(mem_autoSeason);
@@ -636,7 +641,8 @@ void other_parameter_screen()
     Serial.print(F("Freq ete : "));
     Serial.print(eeprom.Read(mem_sumerFreq));
     Serial.println(F(""));
-    break;
+  }
+  break;
   case 5:
   case 6:
     u8g.drawStr(5, 22, "Duree hiver :");
@@ -666,55 +672,6 @@ void manual_mode_screen()
   print_on_screen(70, 33, menu.screenValue);
   Serial.print(F(" Duree : "));
   Serial.print(menu.screenValue);
-  Serial.println(F(""));
-}
-
-void print_ev_state()
-{
-  u8g.drawStr(5, 33, "1 : ");
-  print_on_screen(10, 33, arrayOfEV[0].remainingTimeOn);
-  u8g.drawStr(20, 33, ",");
-  print_on_screen(25, 22, arrayOfEV[0].nextDayOn);
-  Serial.print(F("1 : "));
-  Serial.print(arrayOfEV[0].remainingTimeOn);
-  Serial.print(F(", "));
-  Serial.print(arrayOfEV[0].nextDayOn);
-  Serial.println(F(""));
-  u8g.drawStr(5, 44, "2 : ");
-  print_on_screen(10, 44, arrayOfEV[1].remainingTimeOn);
-  u8g.drawStr(20, 44, ",");
-  print_on_screen(25, 44, arrayOfEV[1].nextDayOn);
-  Serial.print(F("2 : "));
-  Serial.print(arrayOfEV[1].remainingTimeOn);
-  Serial.print(F(", "));
-  Serial.print(arrayOfEV[1].nextDayOn);
-  Serial.println(F(""));
-  u8g.drawStr(5, 55, "3 : ");
-  print_on_screen(10, 55, arrayOfEV[2].remainingTimeOn);
-  u8g.drawStr(20, 55, ",");
-  print_on_screen(25, 55, arrayOfEV[2].nextDayOn);
-  Serial.print(F("3 : "));
-  Serial.print(arrayOfEV[2].remainingTimeOn);
-  Serial.print(F(", "));
-  Serial.print(arrayOfEV[2].nextDayOn);
-  Serial.println(F(""));
-  u8g.drawStr(40, 33, "sortie 4:");
-  print_on_screen(45, 33, arrayOfEV[3].remainingTimeOn);
-  u8g.drawStr(55, 33, ",");
-  print_on_screen(70, 33, arrayOfEV[3].nextDayOn);
-  Serial.print(F("4 : "));
-  Serial.print(arrayOfEV[3].remainingTimeOn);
-  Serial.print(F(", "));
-  Serial.print(arrayOfEV[3].nextDayOn);
-  Serial.println(F(""));
-  u8g.drawStr(40, 44, "5 : ");
-  print_on_screen(45, 44, arrayOfEV[4].remainingTimeOn);
-  u8g.drawStr(55, 44, ",");
-  print_on_screen(70, 44, arrayOfEV[4].nextDayOn);
-  Serial.print(F("5 : "));
-  Serial.print(arrayOfEV[4].remainingTimeOn);
-  Serial.print(F(", "));
-  Serial.print(arrayOfEV[4].nextDayOn);
   Serial.println(F(""));
 }
 
@@ -788,7 +745,6 @@ void draw_menu_edge()
 
 void update_auto_mode_with_ath21()
 {
-  int mem_value;
   int temp_value = -1;
   int humidity_value = -1;
 
@@ -822,7 +778,7 @@ void update_auto_mode_with_ath21()
       freq = eeprom.Read(mem_sumerFreq);
     }
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 6; i++)
       arrayOfEV[i].updateSeason(timeon, freq);
 
     module_state[1] = 0;
@@ -855,27 +811,27 @@ void loop_actualization()
   // Check Temperature and humidity at 12 o'clock if auto mode on with aht21
 
   // Update menu last minute
-  if (menu.rtc_min != menu.rtc[1])
+  if (menu.rtc_min != menu.min)
   {
     int mem_value;
     mem_value = eeprom.Read(mem_autoSeason);
     if (mem_value == 1)
     {
-      if (menu.rtc_day != menu.rtc[4])
+      if (menu.rtc_day != menu.day)
       {
-        if (menu.rtc[2] == 12)
+        if (menu.hour == 12)
         {
           update_auto_mode_with_ath21();
         }
-        menu.rtc_day = menu.rtc[4];
+        menu.rtc_day = menu.day;
       }
     }
-    menu.rtc_min = menu.rtc[1];
+    menu.rtc_min = menu.min;
 
     // Calculate next day on and remaining time
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 6; i++)
     {
-      arrayOfEV[i].updateRemainingTime(menu.rtc[2], menu.rtc[4], menu.rtc[5], menu.rtc[6]);
+      arrayOfEV[i].updateRemainingTime(menu.hour, menu.day, menu.month, menu.year);
       arrayOfEV[i].update_state();
     }
   }

@@ -33,6 +33,7 @@ class MYEEPROM
 private:
 public:
     MYEEPROM();
+    void init_memory();
     void write(int memAdress, int value);
     int Read(int memAdress);
 };

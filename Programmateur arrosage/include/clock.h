@@ -1,5 +1,6 @@
 #ifndef CLOCK_h
 #define CLOCK_h
+#include <Arduino.h>
 
 class CLOCK
 {
@@ -14,13 +15,13 @@ private:
 
 public:
     unsigned long prevMillis;
-    int secs;
-    int mins;
-    int hrs;
-    int days;
-    int months;
-    int years;
+    uint8_t secs;
+    uint8_t mins;
+    uint8_t hrs;
+    uint8_t days;
+    uint8_t months;
+    uint16_t years;
     CLOCK();
-    void updateTime(int (&rtc)[7]);
+    void updateTime(uint8_t *sec, uint8_t *min, uint8_t *hour, uint8_t *day, uint8_t *month, uint16_t *year);
 };
 #endif

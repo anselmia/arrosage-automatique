@@ -79,7 +79,7 @@ void CLOCK::updateMonths()
     }
 }
 
-void CLOCK::updateTime(int (&rtc)[7])
+void CLOCK::updateTime(uint8_t *sec, uint8_t *min, uint8_t *hour, uint8_t *day, uint8_t *month, uint16_t *year)
 {
     // obtain seconds from arduino time
     currmillis = (millis() / 1000.0); // currmilis== current milliseconds
@@ -97,11 +97,10 @@ void CLOCK::updateTime(int (&rtc)[7])
         updateMin();     // call the minutes function to update the value of minutes
     }
 
-    rtc[0] = secs;
-    rtc[1] = mins;
-    rtc[2] = hrs;
-    rtc[3] = 0;
-    rtc[4] = days;
-    rtc[5] = months;
-    rtc[6] = years;
+    *sec = secs;
+    *min = mins;
+    *hour = hrs;
+    *day = days;
+    *month = months;
+    *year = years;
 }

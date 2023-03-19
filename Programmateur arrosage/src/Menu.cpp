@@ -1,12 +1,9 @@
 #include "menu.h"
-#include "myeeprom.h"
-#include <DS1307.h>
-#include "clock.h"
 
 MENU::MENU()
 {
-    MYEEPROM eeprom = MYEEPROM();
-    CLOCK clock = CLOCK();
+    eeprom = MYEEPROM();
+    clock = CLOCK();
 
     rtc_min = -1;
     rtc_day = 0;
@@ -24,16 +21,23 @@ MENU::MENU()
 
 void MENU::initClock(int (&module_state)[2])
 {
+    rtc.begin();
+    rtc.start();
+    sec = 0;
+    min = 0;
+    hour = 0;
+    day = 0;
+    month = 0;
+    year = 0;
     getClock(module_state);
-    RTC.SetOutput(DS1307_SQW32KHZ);
 }
 
 void MENU::getClock(int (&module_state)[2])
 {
-    RTC.get(rtc, true);
-    clock.updateTime(rtc); // to remove when real clock
+    rtc.get(&sec, &min, &hour, &day, &month, &year);
+    clock.updateTime(&sec, &min, &hour, &day, &month, &year); // to remove when real clock
 
-    if (rtc[0] == 0 && rtc[1] == 0 && rtc[2] == 0 && rtc[3] == 0 && rtc[4] == 0 && rtc[5] == 0 && rtc[6] == 0)
+    if (sec == 0 && min == 0 && hour == 0 && day == 0 && month == 0 && year == 0)
         module_state[0] = 1;
     else
         module_state[0] = 0;
@@ -285,7 +289,7 @@ void MENU::selectEV(int ev)
     }
 }
 
-void MENU::updateValue(int dir, int value = 0)
+void MENU::updateValue(int dir, int value)
 {
     redraw = -1;
     int mem_value;
@@ -328,16 +332,12 @@ void MENU::updateValue(int dir, int value = 0)
         case 1:
             switch (cursorPos)
             {
-            case 0:
-                int day;
-                day = rtc[4];
+            case 0:                
                 if (dir == 1)
                 {
                     day = day + 1;
                     if (day >= 31)
-                    {
                         day = 0;
-                    }
                 }
                 else
                 {
@@ -348,40 +348,32 @@ void MENU::updateValue(int dir, int value = 0)
                     }
                 }
 
-                // RTC.stop();
-                // RTC.set(DS1307_DATE, day);
-                // RTC.start();
+                // rtc.stop();
+                // rtc.set(sec, min, hour, day, month, year);
+                // rtc.start();
                 clock.days = day; // to remove
                 redraw = 1;
                 break;
             case 1: // month
-                int month;
-                month = rtc[5];
                 if (dir == 1)
                 {
                     month = month + 1;
                     if (month >= 12)
-                    {
                         month = 0;
-                    }
                 }
                 else
                 {
                     month = month - 1;
                     if (month < 1)
-                    {
                         month = 12;
-                    }
                 }
-                // RTC.stop();
-                // RTC.set(DS1307_MTH, month);
-                // RTC.start();
+                // rtc.stop();
+                // rtc.set(sec, min, hour, day, month, year);
+                // rtc.start();
                 clock.months = month; // to remove
                 redraw = 1;
                 break;
             case 2: // annee
-                int year;
-                year = rtc[6];
                 if (dir == 1)
                 {
                     // year = year - 2000; to uncomment
@@ -392,13 +384,11 @@ void MENU::updateValue(int dir, int value = 0)
                     // year = year - 2000; to uncomment
                     year = year - 1;
                     if (year < 0)
-                    {
                         year = 0;
-                    }
                 }
-                // RTC.stop();
-                // RTC.set(DS1307_YR, year);
-                // RTC.start();
+                // rtc.stop();
+                // rtc.set(sec, min, hour, day, month, year);
+                // rtc.start();
                 clock.years = year; // to remove
                 redraw = 1;
                 break;
@@ -408,60 +398,48 @@ void MENU::updateValue(int dir, int value = 0)
             switch (cursorPos)
             {
             case 0:
-                int hour;
-                hour = rtc[2];
                 if (dir == 1)
                 {
                     hour++;
                     if (hour > 23)
-                    {
                         hour = 0;
-                    }
                 }
                 else
                 {
                     hour--;
                     if (hour < 0)
-                    {
                         hour = 23;
-                    }
                 }
-                // RTC.stop();
-                // RTC.set(DS1307_HR, hour);
-                // RTC.start();
+                // rtc.stop();
+                // rtc.set(sec, min, hour, day, month, year);
+                // rtc.start();
                 clock.hrs = hour; // to remove
                 redraw = 1;
                 break;
 
             case 1: // minute
-                int minute;
-                minute = rtc[1];
                 if (dir == 1)
                 {
-                    minute++;
-                    if (minute > 59)
-                    {
-                        minute = 0;
-                    }
+                    min++;
+                    if (min > 59)
+                        min = 0;
                 }
                 else
                 {
-                    minute--;
-                    if (minute < 0)
-                    {
-                        minute = 59;
-                    }
+                    min--;
+                    if (min < 0)
+                        min = 59;
                 }
-                // RTC.stop();
-                // RTC.set(DS1307_MIN, minute);
-                // RTC.start();
-                clock.mins = minute; // to remove
+                // rtc.stop();
+                // rtc.set(sec, min, hour, day, month, year);
+                // rtc.start();
+                clock.mins = min; // to remove
                 redraw = 1;
                 break;
             case 2: // seconde
-                // RTC.stop();
-                // RTC.set(DS1307_SEC, 0);
-                // RTC.start();
+                // rtc.stop();
+                // rtc.set(0, min, hour, day, month, year);
+                // rtc.start();
                 clock.secs = 0; // to remove
                 redraw = 1;
                 break;

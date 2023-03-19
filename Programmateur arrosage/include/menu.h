@@ -2,14 +2,17 @@
 #define MENU_h
 
 #include "myeeprom.h"
-#include "clock.h";
+#include "clock.h"
+#include <DS1307.h>
 
 class MENU
 {
 private:
 public:
     MENU();
-    int rtc[7];
+    DS1307 rtc;
+    uint8_t sec, min, hour, day, month;
+    uint16_t year;
     int rtc_min;
     int rtc_day;
     int actualScreen;
