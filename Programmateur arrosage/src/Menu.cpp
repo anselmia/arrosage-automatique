@@ -8,7 +8,7 @@ MENU::MENU()
     rtc_min = -1;
     rtc_day = 0;
     screenValue = 0;
-    actualScreen = 0;
+    actualScreen = -1;
     actualLine = 0;
     cursorPos = 0;
     selectedEV = 1;
@@ -45,7 +45,7 @@ void MENU::getClock(int (&module_state)[2])
 
 void MENU::forward()
 {
-    redraw = -1;
+    redraw = 1;
     screenValue = 0;
     switch (actualScreen)
     {
@@ -112,7 +112,6 @@ void MENU::forward()
         break;
     case 6:
         moveCursor();
-        redraw = 0;
         break;
     case 8:
         manual = 1;
@@ -128,7 +127,7 @@ void MENU::forward()
 
 void MENU::backward()
 {
-    redraw = -1;
+    redraw = 1;
     switch (actualScreen)
     {
     case 1:
@@ -161,32 +160,28 @@ void MENU::backward()
 
 void MENU::up()
 {
-    redraw = -1;
+    redraw = 1;
     switch (actualScreen)
     {
     case 1:
-        redraw = 0;
         if (actualLine == 0)
             actualLine = 4;
         else
             actualLine--;
         break;
     case 2:
-        redraw = 0;
         if (actualLine == 1)
             actualLine = 3;
         else
             actualLine--;
         break;
     case 4:
-        redraw = 0;
         if (actualLine == 1)
             actualLine = 4;
         else
             actualLine--;
         break;
     case 6:
-        redraw = 0;
         if (actualLine == 1)
             actualLine = 3;
         else
@@ -207,7 +202,6 @@ void MENU::up()
         else
         {
             actualLine--;
-            redraw = 0;
         }
         break;
     }
@@ -215,32 +209,28 @@ void MENU::up()
 
 void MENU::down()
 {
-    redraw = -1;
+    redraw = 1;
     switch (actualScreen)
     {
     case 1:
-        redraw = 0;
         if (actualLine == 4)
             actualLine = 0;
         else
             actualLine++;
         break;
     case 2:
-        redraw = 0;
         if (actualLine == 3)
             actualLine = 1;
         else
             actualLine++;
         break;
     case 4:
-        redraw = 0;
         if (actualLine == 4)
             actualLine = 1;
         else
             actualLine++;
         break;
     case 6:
-        redraw = 0;
         if (actualLine == 1)
             actualLine = 3;
         else
@@ -261,7 +251,6 @@ void MENU::down()
         else
         {
             actualLine++;
-            redraw = 0;
         }
         break;
     }
@@ -291,7 +280,7 @@ void MENU::selectEV(int ev)
 
 void MENU::updateValue(int dir, int value)
 {
-    redraw = -1;
+    redraw = 1;
     int mem_value;
     int max_value;
     int mem_adress = -1;
@@ -332,7 +321,7 @@ void MENU::updateValue(int dir, int value)
         case 1:
             switch (cursorPos)
             {
-            case 0:                
+            case 0:
                 if (dir == 1)
                 {
                     day = day + 1;
