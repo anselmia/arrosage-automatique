@@ -63,7 +63,7 @@ BUTTON arrayofButton[3] = {BUTTON(pin_button_line1), BUTTON(pin_button_line2), B
 MENU menu = MENU();
 boolean aar = true; // mode wire endtransmission
 int module_state[2];
-char buf[14];
+char buf[20];
 
 U8GLIB_ST7920_128X64_4X u8g(13, 11, 10);
 Adafruit_AHTX0 aht;
@@ -82,7 +82,7 @@ void setup()
 
   Serial.begin(9600);
   Init();
-  delay(1000);
+  delay(3000);
 }
 
 void Init()
@@ -169,26 +169,26 @@ void select_button(int selected_button)
   {
   case 1: // s6
     arrayofButton[2].type = 5;
-    menu.selectEV(6);
+    menu.selectedEV = 6;
     break;
   case 2: // s5
     arrayofButton[2].type = 4;
-    menu.selectEV(5);
+    menu.selectedEV = 5;
   case 3: // s4
     arrayofButton[2].type = 3;
-    menu.selectEV(4);
+    menu.selectedEV = 4;
     break;
   case 4: // s3
     arrayofButton[2].type = 2;
-    menu.selectEV(3);
+    menu.selectedEV = 3;
     break;
   case 5: // s2
     arrayofButton[2].type = 1;
-    menu.selectEV(2);
+    menu.selectedEV = 2;
     break;
   case 6: // s1
     arrayofButton[2].type = 0;
-    menu.selectEV(1);
+    menu.selectedEV = 1;
     break;
   }
 }
@@ -238,38 +238,33 @@ void select()
 
   switch (selectedButton)
   {
-  case 117: // s7
-    arrayofButton[2].type = 6;
-    menu.selectEV(7);
-    button_state = 1;
-    break;
   case 121: // s6
     arrayofButton[2].type = 5;
-    menu.selectEV(6);
+    menu.selectedEV = 6;
     button_state = 1;
   case 116: // s5
     arrayofButton[2].type = 4;
-    menu.selectEV(5);
+    menu.selectedEV = 5;
     button_state = 1;
     break;
   case 114: // s4
     arrayofButton[2].type = 3;
-    menu.selectEV(4);
+    menu.selectedEV = 4;
     button_state = 1;
     break;
   case 101: // s3
     arrayofButton[2].type = 2;
-    menu.selectEV(3);
+    menu.selectedEV = 3;
     button_state = 1;
     break;
   case 122: // s2
     arrayofButton[2].type = 1;
-    menu.selectEV(2);
+    menu.selectedEV = 2;
     button_state = 1;
     break;
   case 97: // s1
     arrayofButton[2].type = 0;
-    menu.selectEV(1);
+    menu.selectedEV = 1;
     button_state = 1;
     break;
   case 18:
@@ -308,9 +303,6 @@ void loop()
   {
     print_screen();
   } while (u8g.nextPage()); // Select the next page
-
-  if (menu.actualScreen == -1)
-    menu.actualScreen = 0;
 
   check_inactiveScreen();
   loop_actualization();
@@ -361,9 +353,6 @@ void print_screen()
   {
     switch (menu.actualScreen)
     {
-    case -1:
-      void_screen();
-      break;
     case 0:
       main_screen();
       break;
@@ -405,45 +394,43 @@ void print_screen()
       break;
     }
   }
-}
-
-void void_screen()
-{
-  u8g.drawStr(20, 11, "Bienvenue");
+  else
+    u8g.disableCursor();
 }
 
 void main_screen()
 {
+  u8g.disableCursor();
   sprintf(buf, "%02d/%02d/%04d", menu.day, menu.month, menu.year);
   u8g.drawStr(34, 11, buf);
 
   sprintf(buf, "%02d:%02d:%02d", menu.hour, menu.min, menu.sec);
-  u8g.drawStr(40, 21, buf);
+  u8g.drawStr(44, 21, buf);
 
-  u8g.drawStr(5, 33, "1 : ");
-  print_on_screen(20, 33, arrayOfEV[0].remainingTimeOn);
-  u8g.drawStr(34, 33, ",");
-  print_on_screen(40, 33, arrayOfEV[0].nextDayOn);
-  u8g.drawStr(5, 44, "2 : ");
-  print_on_screen(20, 44, arrayOfEV[1].remainingTimeOn);
-  u8g.drawStr(34, 44, ",");
-  print_on_screen(40, 44, arrayOfEV[1].nextDayOn);
-  u8g.drawStr(5, 55, "3 : ");
-  print_on_screen(20, 55, arrayOfEV[2].remainingTimeOn);
-  u8g.drawStr(34, 55, ",");
-  print_on_screen(40, 55, arrayOfEV[2].nextDayOn);
-  u8g.drawStr(60, 33, "4 : ");
-  print_on_screen(75, 33, arrayOfEV[3].remainingTimeOn);
-  u8g.drawStr(90, 33, ",");
-  print_on_screen(96, 33, arrayOfEV[3].nextDayOn);
-  u8g.drawStr(60, 44, "5 : ");
-  print_on_screen(75, 44, arrayOfEV[4].remainingTimeOn);
-  u8g.drawStr(90, 44, ",");
-  print_on_screen(96, 44, arrayOfEV[4].nextDayOn);
-  u8g.drawStr(60, 55, "6 : ");
-  print_on_screen(75, 55, arrayOfEV[5].remainingTimeOn);
-  u8g.drawStr(90, 55, ",");
-  print_on_screen(96, 55, arrayOfEV[5].nextDayOn);
+  u8g.drawStr(15, 33, "1 : ");
+  print_on_screen(30, 33, arrayOfEV[0].remainingTimeOn);
+  u8g.drawStr(44, 33, ",");
+  print_on_screen(50, 33, arrayOfEV[0].nextDayOn);
+  u8g.drawStr(15, 44, "2 : ");
+  print_on_screen(30, 44, arrayOfEV[1].remainingTimeOn);
+  u8g.drawStr(44, 44, ",");
+  print_on_screen(50, 44, arrayOfEV[1].nextDayOn);
+  u8g.drawStr(15, 55, "3 : ");
+  print_on_screen(30, 55, arrayOfEV[2].remainingTimeOn);
+  u8g.drawStr(44, 55, ",");
+  print_on_screen(50, 55, arrayOfEV[2].nextDayOn);
+  u8g.drawStr(70, 33, "4 : ");
+  print_on_screen(85, 33, arrayOfEV[3].remainingTimeOn);
+  u8g.drawStr(100, 33, ",");
+  print_on_screen(106, 33, arrayOfEV[3].nextDayOn);
+  u8g.drawStr(70, 44, "5 : ");
+  print_on_screen(85, 44, arrayOfEV[4].remainingTimeOn);
+  u8g.drawStr(100, 44, ",");
+  print_on_screen(106, 44, arrayOfEV[4].nextDayOn);
+  u8g.drawStr(70, 55, "6 : ");
+  print_on_screen(85, 55, arrayOfEV[5].remainingTimeOn);
+  u8g.drawStr(100, 55, ",");
+  print_on_screen(106, 55, arrayOfEV[5].nextDayOn);
 }
 
 void menu_screen()
@@ -475,36 +462,29 @@ void auto_mode_screen()
   u8g.drawStr(15, 33, "Duree :");
   mem_value = eeprom.Read(mem_autoTimeOn + (menu.selectedEV * 10));
   print_on_screen(70, 33, mem_value);
+  u8g.drawStr(90, 33, "min");
   // print auto frequency
   u8g.drawStr(15, 44, "Tous les:");
   print_mem_value(70, 44, mem_autoFreq + (menu.selectedEV * 10));
-  u8g.drawStr(110, 44, "j");
+  u8g.drawStr(90, 44, "j");
   // print auto start hour
-  u8g.drawStr(15, 56, "Heure :");
+  u8g.drawStr(15, 55, "Heure :");
   print_mem_value(70, 55, mem_autoStartHour + (menu.selectedEV * 10));
+  u8g.drawStr(90, 55, "h");
 }
 
 void clock_parameter_screen()
 {
-  menu.getClock(module_state);
-  u8g.drawStr(20, 11, " Horloge ");
-  u8g.drawStr(15, 22, " Date :");
-  print_on_screen(30, 22, menu.day);
-  u8g.drawStr(38, 22, "/");
-  print_on_screen(42, 22, menu.month);
-  u8g.drawStr(50, 22, "/");
-  print_on_screen(54, 22, menu.year);
-  u8g.drawStr(15, 44, " Heure :");
-  print_on_screen(30, 44, menu.hour);
-  u8g.drawStr(38, 44, ":");
-  print_on_screen(42, 44, menu.min);
-  u8g.drawStr(50, 44, ":");
-  print_on_screen(45, 44, menu.sec);
+  sprintf(buf, "Date : %02d/%02d/%04d", menu.day, menu.month, menu.year);
+  u8g.drawStr(15, 22, buf);
+
+  sprintf(buf, "Heure : %02d:%02d:%02d", menu.hour, menu.min, menu.sec);
+  u8g.drawStr(15, 44, buf);
 }
 
 void other_parameter_screen()
 {
-  u8g.drawStr(20, 11, "Divers");
+  u8g.drawStr(50, 11, "Divers");
   switch (menu.actualLine)
   {
   case 1:
@@ -512,35 +492,40 @@ void other_parameter_screen()
   case 3:
   case 4:
   {
-    u8g.drawStr(15, 22, "Auto ete/hiver :");
+    u8g.drawStr(15, 22, "Saison :");
     int mem_value = eeprom.Read(mem_autoSeason);
-    activate_screen(mem_value, 90, 22);
-    ;
-    u8g.drawStr(15, 33, "Temp ete/hiver :");
-    print_mem_value(70, 33, mem_tempSeason);
+    activate_screen(mem_value, 70, 22);
+    u8g.drawStr(15, 33, "Temp. :");
+    print_mem_value(80, 33, mem_tempSeason);
+    u8g.drawStr(95, 33, "deg");
     u8g.drawStr(15, 44, "Duree ete :");
-    print_mem_value(70, 44, mem_sumerTimeon);
+    print_mem_value(80, 44, mem_sumerTimeon);
+    u8g.drawStr(95, 44, "min");
     u8g.drawStr(15, 55, "Freq ete :");
-    print_mem_value(70, 55, mem_sumerFreq);
+    print_mem_value(80, 55, mem_sumerFreq);
+    u8g.drawStr(95, 55, "j");
   }
   break;
-  case 5:
   case 6:
+  case 7:
     u8g.drawStr(15, 22, "Duree hiver :");
-    print_mem_value(70, 22, mem_winterTimeon);
+    print_mem_value(85, 22, mem_winterTimeon);
+    u8g.drawStr(100, 22, "min");
     u8g.drawStr(15, 33, "Freq hivers :");
-    print_mem_value(70, 33, mem_winterFreq);
+    print_mem_value(85, 33, mem_winterFreq);
+    u8g.drawStr(100, 33, "j");
     break;
   }
 }
 
 void manual_mode_screen()
 {
-  u8g.drawStr(12, 11, "Mode manuel");
+  u8g.drawStr(33, 11, "Mode manuel");
   u8g.drawStr(15, 22, "Sortie :");
   print_on_screen(70, 22, menu.selectedEV);
   u8g.drawStr(15, 33, "Duree :");
   print_on_screen(70, 33, menu.screenValue);
+  u8g.drawStr(90, 33, "min");
 }
 
 void state_screen()
@@ -573,7 +558,10 @@ void stop_screen()
 void draw_cursor()
 {
   u8g.enableCursor();
-  u8g.setCursorPos(10, (menu.actualLine * 11) + 5);
+  if (menu.actualLine > 5)
+    u8g.setCursorPos(12, ((menu.actualLine - 5) * 11) + 5);
+  else
+    u8g.setCursorPos(12, (menu.actualLine * 11) + 5);
 }
 
 void draw_menu_edge()
@@ -647,13 +635,20 @@ void loop_actualization()
     arrayOfEV[menu.selectedEV - 1].remainingTimeOn = 0;
     menu.stop = 0;
   }
+  for (int i = 0; i < 6; i++)
+  {
+    if (eeprom.Read(mem_state + (10 * (i + 1))) == 0)
+    {
+      arrayOfEV[i].remainingTimeOn = 0;
+      arrayOfEV[i].nextDayOn = 0;
+    }
+  }
 
-  // Check Temperature and humidity at 12 o'clock if auto mode on with aht21
-
-  // Update menu last minute
+  // Update EV state every minute
   if (menu.rtc_min != menu.min)
   {
     int mem_value;
+    // Check Temperature and humidity at 12 o'clock if auto mode on with aht21
     mem_value = eeprom.Read(mem_autoSeason);
     if (mem_value == 1)
     {

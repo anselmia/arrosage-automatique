@@ -109,13 +109,7 @@ int EV::leap_year(int year)
 }
 
 void EV::updateRemainingTime(int hr, int day, int month, int year)
-{
-    if (eeprom.Read(mem_state + (10 * num)) == 0)
-    {
-        remainingTimeOn = 0;
-        nextDayOn = 0;
-    }
-
+{ 
     if (remainingTimeOn != 0)
     {
         remainingTimeOn--;

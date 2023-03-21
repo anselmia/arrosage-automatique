@@ -18,7 +18,6 @@ public:
     int actualScreen;
     int actualLine;
     int cursorPos;
-    int redraw;
     int screenValue;
     void initClock(int (&module_state)[2]);
     void getClock(int (&module_state)[2]);
@@ -26,7 +25,6 @@ public:
     void backward();
     void up();
     void down();
-    void selectEV(int ev);
     void updateValue(int dir, int value = 0);
     void moveCursor();
     MYEEPROM eeprom = MYEEPROM();
