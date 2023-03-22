@@ -51,18 +51,18 @@ Line 2 :
 1 : -
 
 Line 3 :
-0 : s7
-1 : s6
-2 : s5
-3 : s4
-4 : s3
-5 : s2
-6 : s1
+0 : s6
+1 : s5
+2 : s4
+3 : s3
+4 : s2
+5 : s1
 */
 BUTTON arrayofButton[3] = {BUTTON(pin_button_line1), BUTTON(pin_button_line2), BUTTON(pin_button_line3)};
 MENU menu = MENU();
 boolean aar = true; // mode wire endtransmission
 int module_state[2];
+int manual_couter = 0;
 char buf[20];
 
 U8GLIB_ST7920_128X64_4X u8g(13, 11, 10);
@@ -618,23 +618,60 @@ void update_auto_mode_with_ath21()
     module_state[1] = 1;
 }
 
+// Update all EV state based on clock
 void loop_actualization()
 {
-  if (menu.delay == 1)
+  // EV delayed
+  if (menu.delay == true)
   {
     arrayOfEV[menu.selectedEV - 1].nextDayOn += menu.screenValue;
-    menu.delay = 0;
+    menu.delay = false;
   }
-  if (menu.manual == 1)
+
+  // EV started manually
+  if (menu.manual == true)
   {
     arrayOfEV[menu.selectedEV - 1].remainingTimeOn = menu.screenValue;
-    menu.manual = 0;
+    menu.manual = false;
   }
-  if (menu.stop == 1)
+
+  // EV stopped manually
+  if (menu.stop == true)
   {
     arrayOfEV[menu.selectedEV - 1].remainingTimeOn = 0;
-    menu.stop = 0;
+    menu.stop = false;
   }
+
+  // Start every 5 min one EV mode
+  if (menu.manual_all > 0)
+  {
+    if (manual_couter == 0)
+      arrayOfEV[menu.manual_all - 1].remainingTimeOn = 5;
+
+    if (menu.rtc_min != menu.min)
+    {
+      manual_couter++;
+    }
+    if (manual_couter > 5)
+    {
+      manual_couter = 0;
+      menu.manual_all++;
+    }
+
+    if (menu.manual_all > 6)
+      menu.manual_all = 0;
+  }
+
+  // Stop all EV
+  if (menu.stop_all == true)
+  {
+    for (int i = 0; i < 6; i++)
+      arrayOfEV[i].remainingTimeOn = 0;
+
+    menu.stop_all = false;
+  }
+
+  // If EV has been desactivated, stop it
   for (int i = 0; i < 6; i++)
   {
     if (eeprom.Read(mem_state + (10 * (i + 1))) == 0)

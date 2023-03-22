@@ -30,9 +30,11 @@ public:
     MYEEPROM eeprom = MYEEPROM();
     CLOCK clock = CLOCK();
     int selectedEV;
-    int delay;
-    int stop;
-    int manual;
+    bool delay;
+    bool stop;
+    bool manual;
     int inactive;
+    bool stop_all;
+    int manual_all;
 };
 #endif
