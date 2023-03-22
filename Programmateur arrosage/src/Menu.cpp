@@ -11,10 +11,12 @@ MENU::MENU()
     actualScreen = 0;
     actualLine = 0;
     cursorPos = 0;
-    delay = 0;
-    stop = 0;
+    delay = false;
+    stop = false;
     inactive = 0;
-    manual = 0;
+    manual = false;
+    stop_all = false;
+    manual_all = 0;
 }
 
 void MENU::initClock(int (&module_state)[2])
@@ -105,17 +107,17 @@ void MENU::forward()
         moveCursor();
         break;
     case 8:
-        manual = 1;
+        manual = true;
         actualScreen = 2;
         actualLine = 2;
         break;
     case 10:
-        delay = 1;
+        delay = true;
         actualScreen = 2;
         actualLine = 2;
         break;
     case 11:
-        stop = 1;
+        stop = true;
         actualScreen = 2;
         actualLine = 2;
         break;
@@ -236,6 +238,17 @@ void MENU::updateValue(int dir, int value)
     int mem_adress = -1;
     switch (actualScreen)
     {
+    case 0:
+        switch (dir)
+        {
+        case 0:
+            stop_all = true;
+            break;
+        case 1:
+            manual_all = 1;
+            break;
+        }
+        break;
     case 4:
         switch (actualLine)
         {

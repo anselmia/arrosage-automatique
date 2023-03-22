@@ -33,13 +33,9 @@ void EV::OFF()
 void EV::update_state()
 {
     if (remainingTimeOn == 0)
-    {
         OFF();
-    }
     else
-    {
         ON();
-    }
 }
 
 void EV::calculate_next_day(int day, int month, int year)
@@ -109,15 +105,13 @@ int EV::leap_year(int year)
 }
 
 void EV::updateRemainingTime(int hr, int day, int month, int year)
-{ 
+{
     if (remainingTimeOn != 0)
     {
         remainingTimeOn--;
 
         if (remainingTimeOn < 0)
-        {
             remainingTimeOn = 0;
-        }
     }
 
     int time_on = 0;
@@ -134,22 +128,16 @@ void EV::updateRemainingTime(int hr, int day, int month, int year)
                 {
                     // if not started once set next day as today
                     if (nextDayOn == 0)
-                    {
                         nextDayOn = day;
-                    }
                     // if clock day == next start day
                     if (nextDayOn == day)
                     {
                         // mise en route
                         time_on = eeprom.Read(mem_autoTimeOn + (10 * num));
                         if (time_on <= 0)
-                        {
                             time_on = 0;
-                        }
                         if (time_on >= max_time_on_ev)
-                        {
                             time_on = max_time_on_ev;
-                        }
 
                         remainingTimeOn = time_on;
                         calculate_next_day(day, month, year);
