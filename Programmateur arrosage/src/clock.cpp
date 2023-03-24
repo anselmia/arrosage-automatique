@@ -90,7 +90,7 @@ void CLOCK::updateTime(uint8_t *sec, uint8_t *min, uint8_t *hour, uint8_t *day, 
         prevMillis = currmillis;
         secs++;
     }
-    if (secs > 60)
+    if (secs > 59)
     {
         secs = 0;
         mins = mins + 1; // when program start and secs==0 minutes become 0

@@ -9,11 +9,11 @@
 #include "myeeprom.h"
 #include <U8glib.h> // LCD screen
 #include <avr/wdt.h>
-#include <Adafruit_AHTX0.h> // AHT21
 #include "button.h"
 #include "ev.h"
 // #include "screen.h"
 #include "menu.h"
+#include <AHT20.h> // AHT21
 
 int versio = 1.0;
 
@@ -66,8 +66,7 @@ int manual_couter = 0;
 char buf[20];
 
 U8GLIB_ST7920_128X64_4X u8g(13, 11, 10);
-Adafruit_AHTX0 aht;
-Adafruit_Sensor *aht_humidity, *aht_temp;
+AHT20 aht20;
 
 void setup()
 {
@@ -88,10 +87,16 @@ void setup()
 void Init()
 {
   // Init com with ds1307
-  inii2c(0x68, 0);
+  inii2c(0x68, 1);
 
-  // Init com with aht21 sensor
-  inii2c(0x38, 1);
+  Wire.begin(); // Join I2C bus
+  if (aht20.begin() == false)
+  {
+    Serial.println("AHT20 not detected. Please check wiring. Freezing.");
+    while (1)
+      ;
+  }
+  Serial.println("AHT20 acknowledged.");
 
   // Init EV
   for (int i = 0; i < 6; i++)
@@ -574,48 +579,49 @@ void draw_menu_edge()
   u8g.drawRFrame(x, y, length, height, r);
 }
 
-void update_auto_mode_with_ath21()
+int read_aht21()
 {
-  int temp_value = -1;
-  int humidity_value = -1;
-
-  sensors_event_t humidity;
-  sensors_event_t temp;
-  aht_humidity->getEvent(&humidity);
-  aht_temp->getEvent(&temp);
-
-  temp_value = (int)temp.temperature;
-  humidity_value = (int)humidity.relative_humidity;
-
-  if (temp_value != 0)
+  float temperature;
+  if (aht20.available() == true)
   {
-    int timeon;
-    int freq;
-
-    eeprom.write(mem_dayTemp, temp_value);
-    eeprom.write(mem_dayHumidity, humidity_value);
-
-    int temp_change_season;
-    temp_change_season = eeprom.Read(mem_tempSeason);
-
-    if (temp_value <= temp_change_season)
-    {
-      timeon = eeprom.Read(mem_winterTimeon);
-      freq = eeprom.Read(mem_winterFreq);
-    }
-    else
-    {
-      timeon = eeprom.Read(mem_sumerTimeon);
-      freq = eeprom.Read(mem_sumerFreq);
-    }
-
-    for (int i = 0; i < 6; i++)
-      arrayOfEV[i].updateSeason(timeon, freq);
-
-    module_state[1] = 0;
+    // Get the new temperature and humidity value
+    temperature = aht20.getTemperature();
+    // float humidity = aht20.getHumidity();
+    eeprom.write(mem_dayTemp, temperature);
   }
   else
-    module_state[1] = 1;
+  {
+    temperature = eeprom.Read(mem_dayTemp);
+    module_state[0] = 1;
+  }
+  return temperature;
+}
+
+void update_auto_mode_with_ath21()
+{ // int humidity_value = -1;
+
+  int temp_value = read_aht21();
+
+  int timeon;
+  int freq;
+  // eeprom.write(mem_dayHumidity, humidity_value);
+
+  int temp_change_season;
+  temp_change_season = eeprom.Read(mem_tempSeason);
+
+  if (temp_value <= temp_change_season)
+  {
+    timeon = eeprom.Read(mem_winterTimeon);
+    freq = eeprom.Read(mem_winterFreq);
+  }
+  else
+  {
+    timeon = eeprom.Read(mem_sumerTimeon);
+    freq = eeprom.Read(mem_sumerFreq);
+  }
+
+  for (int i = 0; i < 6; i++)
+    arrayOfEV[i].updateSeason(timeon, freq);
 }
 
 // Update all EV state based on clock

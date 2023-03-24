@@ -38,9 +38,9 @@ void MENU::getClock(int (&module_state)[2])
     clock.updateTime(&sec, &min, &hour, &day, &month, &year); // to remove when real clock
 
     if (sec == 0 && min == 0 && hour == 0 && day == 0 && month == 0 && year == 0)
-        module_state[0] = 1;
+        module_state[1] = 1;
     else
-        module_state[0] = 0;
+        module_state[1] = 0;
 }
 
 void MENU::forward()
