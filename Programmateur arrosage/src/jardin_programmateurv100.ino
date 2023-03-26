@@ -502,8 +502,8 @@ void auto_mode_screen()
   u8g.drawStr(90, 44, "j");
   // print auto start hour
   u8g.drawStr(15, 55, "Heure :");
-  print_mem_value(70, 55, mem_autoStartHour + (menu.selectedEV * 10));
-  u8g.drawStr(90, 55, "h");
+  sprintf(buf, "%02d:%02d", eeprom.Read(mem_autoStartHour + (menu.selectedEV * 10)), eeprom.Read(mem_autoStartMin + (menu.selectedEV * 10)));
+  u8g.drawStr(70, 55, buf);
 }
 
 void clock_parameter_screen()
@@ -752,7 +752,7 @@ void loop_actualization()
     // Calculate next day on and remaining time
     for (int i = 0; i < 6; i++)
     {
-      arrayOfEV[i].updateRemainingTime(menu.hour, menu.day, menu.month, menu.year);
+      arrayOfEV[i].updateRemainingTime(menu.hour, menu.min, menu.day, menu.month, menu.year);
     }
   }
 

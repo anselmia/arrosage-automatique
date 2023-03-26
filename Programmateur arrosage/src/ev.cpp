@@ -103,7 +103,7 @@ int EV::leap_year(int year)
     return days_in_month;
 }
 
-void EV::updateRemainingTime(int hr, int day, int month, int year)
+void EV::updateRemainingTime(int hr, int min, int day, int month, int year)
 {
     if (remainingTimeOn != 0)
     {
@@ -120,26 +120,30 @@ void EV::updateRemainingTime(int hr, int day, int month, int year)
         // if ev state is on
         if (eeprom.Read(mem_state + (10 * num)) == 1)
         {
-            //  if clock h == auto start time
+            //  if clock h == auto start time hour
             if (hr == eeprom.Read(mem_autoStartHour + (10 * num)))
             {
-                if (remainingTimeOn == 0)
+                //  if clock min == auto start time min
+                if (min == eeprom.Read(mem_autoStartMin + (10 * num)))
                 {
-                    // if not started once set next day as today
-                    if (nextDayOn == 0)
-                        nextDayOn = day;
-                    // if clock day == next start day
-                    if (nextDayOn == day)
+                    if (remainingTimeOn == 0)
                     {
-                        // mise en route
-                        time_on = eeprom.Read(mem_autoTimeOn + (10 * num));
-                        if (time_on <= 0)
-                            time_on = 0;
-                        if (time_on >= max_time_on_ev)
-                            time_on = max_time_on_ev;
+                        // if not started once set next day as today
+                        if (nextDayOn == 0)
+                            nextDayOn = day;
+                        // if clock day == next start day
+                        if (nextDayOn == day)
+                        {
+                            // mise en route
+                            time_on = eeprom.Read(mem_autoTimeOn + (10 * num));
+                            if (time_on <= 0)
+                                time_on = 0;
+                            if (time_on >= max_time_on_ev)
+                                time_on = max_time_on_ev;
 
-                        remainingTimeOn = time_on;
-                        calculate_next_day(day, month, year);
+                            remainingTimeOn = time_on;
+                            calculate_next_day(day, month, year);
+                        }
                     }
                 }
             }

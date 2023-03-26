@@ -6,6 +6,7 @@ const int mem_autostate = 12;
 const int mem_autoFreq = 11;
 const int mem_autoTimeOn = 10;
 const int mem_autoStartHour = 13;
+const int mem_autoStartMin = 14;
 const int mem_dayTemp = 150;
 const int mem_dayHumidity = 151;
 const int mem_autoSeason = 160;
@@ -28,6 +29,7 @@ const int mem_winterFreq = 165;
     163 frequency summer
     164 duration winter
     165 frequency winter*/
+    
 class MYEEPROM
 {
 private:

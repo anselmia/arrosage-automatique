@@ -87,6 +87,7 @@ void MENU::forward()
         switch (actualLine)
         {
         case 1:
+            cursorPos = 0;
             actualScreen = 4;
             selectedEV = 1;
             actualLine = 1;
@@ -102,8 +103,12 @@ void MENU::forward()
             break;
         }
         break;
+    case 4:
+        if (actualLine == 4)
+            moveCursor(2);
+        break;
     case 6:
-        moveCursor();
+        moveCursor(3);
         break;
     case 8:
         manual = true;
@@ -267,10 +272,19 @@ void MENU::updateValue(int dir, int value)
             max_value = 14;
             break;
         case 4:
-            mem_adress = mem_autoStartHour + (10 * selectedEV);
-            mem_value = eeprom.Read(mem_adress);
-            max_value = 23;
-            break;
+            switch (cursorPos)
+            {
+            case 0:
+                mem_adress = mem_autoStartHour + (10 * selectedEV);
+                mem_value = eeprom.Read(mem_adress);
+                max_value = 23;
+                break;
+            case 1:
+                mem_adress = mem_autoStartMin + (10 * selectedEV);
+                mem_value = eeprom.Read(mem_adress);
+                max_value = 59;
+                break;
+            }
         }
         break;
     case 6:
@@ -488,10 +502,10 @@ void MENU::selectEV(int ev)
     }
 }
 
-void MENU::moveCursor()
+void MENU::moveCursor(int maxPos)
 {
     cursorPos++;
-    if (cursorPos == 3)
+    if (cursorPos == maxPos)
     {
         cursorPos = 0;
     }

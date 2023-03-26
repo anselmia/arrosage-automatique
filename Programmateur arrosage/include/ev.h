@@ -2,6 +2,7 @@
 #define EV_h
 #include "myeeprom.h"
 #include "Arduino.h"
+#include <DS1307.h>
 
 const int max_time_on_ev = 20;
 
@@ -21,7 +22,7 @@ public:
     EV(int pin, int numEV);
     int nextDayOn;
     int remainingTimeOn;
-    void updateRemainingTime(int hr, int day, int month, int year);
+    void updateRemainingTime(int hr, int min, int day, int month, int year);
     void updateSeason(int timeon, int freq);
     void init();
     void update_state();
