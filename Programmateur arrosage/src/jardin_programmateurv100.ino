@@ -15,9 +15,12 @@
 #include "menu.h"
 #include <AHT20.h> // AHT21
 
+// Program version
 int versio = 1.0;
 
+// Read / Write eeprom
 MYEEPROM eeprom = MYEEPROM();
+
 /* EV pins*/
 const int pin_ev1 = 0;
 const int pin_ev2 = 1;
@@ -32,13 +35,17 @@ const int pin_led = 6;
 /* Pin alim scrren */
 const int pin_screen = 7;
 
+// EV
 EV arrayOfEV[6] = {EV(pin_ev1, 1), EV(pin_ev2, 2), EV(pin_ev3, 3), EV(pin_ev4, 4), EV(pin_ev5, 5), EV(pin_ev6, 6)};
+
 // SCREEN screen;
+
 // bouton
 int button_state = 0;
 const int pin_button_line1 = 0;
 const int pin_button_line2 = 1;
 const int pin_button_line3 = 3;
+
 /* type of button
 Line 1 :
 0 : right
@@ -51,21 +58,32 @@ Line 2 :
 1 : -
 
 Line 3 :
-0 : s6
-1 : s5
-2 : s4
-3 : s3
-4 : s2
-5 : s1
+0 : s1
+1 : s2
+2 : s3
+3 : s4
+4 : s5
+5 : s6
 */
 BUTTON arrayofButton[3] = {BUTTON(pin_button_line1), BUTTON(pin_button_line2), BUTTON(pin_button_line3)};
+
+// Menu
 MENU menu = MENU();
-boolean aar = true; // mode wire endtransmission
-int module_state[2];
+
+// error
+/* 0 : temperature
+   1 : Clock */
+int error[2];
+
 int manual_couter = 0;
+
+// Text buffer
 char buf[20];
 
+// Screen
 U8GLIB_ST7920_128X64_4X u8g(13, 11, 10);
+
+// Aht21 sensor
 AHT20 aht20;
 
 void setup()
@@ -74,12 +92,11 @@ void setup()
   Wire.begin();
   Wire.setClock(31000L); // reglage de horloge de i2c
   u8g.setColorIndex(1);
-  DDRC |= _BV(2) | _BV(3); // POWER:Vcc Gnd
-  PORTC |= _BV(3);         // VCC PINC3
-  // initialisation de ds1307
-  menu.initClock(module_state);
 
-  Serial.begin(9600);
+  //  initialisation de ds1307
+  menu.initClock(error);
+
+  // Serial.begin(9600);
   Init();
   delay(3000);
 }
@@ -92,17 +109,21 @@ void Init()
   Wire.begin(); // Join I2C bus
   if (aht20.begin() == false)
   {
-    Serial.println("AHT20 not detected. Please check wiring. Freezing.");
+    do
+    {
+      u8g.setFont(u8g_font_tpss);
+      u8g.drawStr(5, 44, "AHT21 Not found");
+    } while (u8g.nextPage());
     while (1)
       ;
   }
-  Serial.println("AHT20 acknowledged.");
+  Serial.println("AHT21 acknowledged.");
 
   // Init EV
   for (int i = 0; i < 6; i++)
     arrayOfEV[i].init();
 
-  // set output for error led an screen
+  // set output for error led and screen
   pinMode(pin_led, OUTPUT);
   pinMode(pin_screen, OUTPUT);
 
@@ -120,7 +141,7 @@ void Init()
   {
     u8g.setFont(u8g_font_tpss);            // Utilise la police de caractÃ¨re standard
     u8g.drawStr(30, 11, "Initialisation"); // 12 line
-    if (module_state[1] == 1)
+    if (error[1] == 1)
       u8g.drawStr(10, 22, "erreur horloge");
 
     u8g.drawStr(5, 44, "version");
@@ -131,195 +152,200 @@ void Init()
 void inii2c(int adr, int i)
 {
   Wire.beginTransmission(adr);
-  module_state[i] = Wire.endTransmission(aar);
+  error[i] = Wire.endTransmission(true);
 }
 
 void select_button(int selected_button)
 {
   switch (arrayofButton[0].getSelection())
   {
-  case 1: // right
+  case 0: // right
     arrayofButton[0].type = 0;
     menu.forward();
+    // Serial.println("right");
     break;
-  case 5: // up
+  case 1: // up
     arrayofButton[0].type = 1;
     menu.up();
+    // Serial.println("up");
     break;
-  case 7: // left
+  case 2: // left
     arrayofButton[0].type = 2;
     menu.backward();
-
+    // Serial.println("left");
     break;
-  case 8: // down
+  case 3: // down
     arrayofButton[0].type = 3;
     menu.down();
+    // Serial.println("down");
     break;
   }
 
-  switch (arrayofButton[0].getSelection())
+  switch (arrayofButton[1].getSelection())
   {
-  case 1: // +
+  case 0: // +
     arrayofButton[1].type = 0;
     menu.updateValue(1);
-
+    // Serial.println("+");
     break;
-  case 2: // -
+  case 1: // -
     arrayofButton[1].type = 1;
     menu.updateValue(0);
+    // Serial.println("-");
     break;
   }
 
-  switch (arrayofButton[0].getSelection())
+  switch (arrayofButton[2].getSelection())
   {
-  case 1: // s6
-    arrayofButton[2].type = 5;
-    menu.selectedEV = 6;
+  case 0: // s1
+    arrayofButton[2].type = 0;
+    menu.selectEV(1);
+    // Serial.println("ev 1");
     break;
-  case 2: // s5
-    arrayofButton[2].type = 4;
-    menu.selectedEV = 5;
+  case 1: // s12
+    arrayofButton[2].type = 1;
+    menu.selectEV(2);
+    // Serial.println("ev 2");
+    break;
+  case 2: // s3
+    arrayofButton[2].type = 2;
+    menu.selectEV(3);
+    // Serial.println("ev 3");
+    break;
   case 3: // s4
     arrayofButton[2].type = 3;
-    menu.selectedEV = 4;
+    menu.selectEV(4);
+    // Serial.println("ev 4");
     break;
-  case 4: // s3
-    arrayofButton[2].type = 2;
-    menu.selectedEV = 3;
+  case 4: // s5
+    arrayofButton[2].type = 4;
+    menu.selectEV(5);
+    // Serial.println("ev 5");
     break;
-  case 5: // s2
-    arrayofButton[2].type = 1;
-    menu.selectedEV = 2;
-    break;
-  case 6: // s1
-    arrayofButton[2].type = 0;
-    menu.selectedEV = 1;
+  case 5: // s6
+    arrayofButton[2].type = 5;
+    menu.selectEV(6);
+    // Serial.println("ev 6");
     break;
   }
 }
 
 // to remove
-void select()
-{
-  byte selectedButton;
-  selectedButton = Serial.read();
-  switch (selectedButton)
-  {
-  case 54: // right
-    arrayofButton[0].type = 0;
-    menu.forward();
-    button_state = 1;
-    break;
-  case 56: // up
-    arrayofButton[0].type = 1;
-    menu.up();
-    button_state = 1;
-    break;
-  case 52: // left
-    arrayofButton[0].type = 2;
-    menu.backward();
-    button_state = 1;
-    break;
-  case 50: // down
-    arrayofButton[0].type = 3;
-    menu.down();
-    button_state = 1;
-    break;
-  }
-
-  switch (selectedButton)
-  {
-  case 43: // +
-    arrayofButton[1].type = 0;
-    menu.updateValue(1);
-    button_state = 1;
-    break;
-  case 45: // -
-    arrayofButton[1].type = 1;
-    menu.updateValue(0);
-    button_state = 1;
-    break;
-  }
-
-  switch (selectedButton)
-  {
-  case 121: // s6
-    arrayofButton[2].type = 5;
-    menu.selectedEV = 6;
-    button_state = 1;
-  case 116: // s5
-    arrayofButton[2].type = 4;
-    menu.selectedEV = 5;
-    button_state = 1;
-    break;
-  case 114: // s4
-    arrayofButton[2].type = 3;
-    menu.selectedEV = 4;
-    button_state = 1;
-    break;
-  case 101: // s3
-    arrayofButton[2].type = 2;
-    menu.selectedEV = 3;
-    button_state = 1;
-    break;
-  case 122: // s2
-    arrayofButton[2].type = 1;
-    menu.selectedEV = 2;
-    button_state = 1;
-    break;
-  case 97: // s1
-    arrayofButton[2].type = 0;
-    menu.selectedEV = 1;
-    button_state = 1;
-    break;
-  case 18:
-    break;
-  }
-}
+// void select()
+// {
+//   byte selectedButton;
+//   selectedButton = Serial.read();
+//   switch (selectedButton)
+//   {
+//   case 54: // right
+//     arrayofButton[0].type = 0;
+//     menu.forward();
+//     button_state = 1;
+//     break;
+//   case 56: // up
+//     arrayofButton[0].type = 1;
+//     menu.up();
+//     button_state = 1;
+//     break;
+//   case 52: // left
+//     arrayofButton[0].type = 2;
+//     menu.backward();
+//     button_state = 1;
+//     break;
+//   case 50: // down
+//     arrayofButton[0].type = 3;
+//     menu.down();
+//     button_state = 1;
+//     break;
+//   }
+//
+//   switch (selectedButton)
+//   {
+//   case 43: // +
+//     arrayofButton[1].type = 0;
+//     menu.updateValue(1);
+//     button_state = 1;
+//     break;
+//   case 45: // -
+//     arrayofButton[1].type = 1;
+//     menu.updateValue(0);
+//     button_state = 1;
+//     break;
+//   }
+//
+//   switch (selectedButton)
+//   {
+//   case 121: // s6
+//     arrayofButton[2].type = 5;
+//     menu.selectedEV = 6;
+//     button_state = 1;
+//   case 116: // s5
+//     arrayofButton[2].type = 4;
+//     menu.selectedEV = 5;
+//     button_state = 1;
+//     break;
+//   case 114: // s4
+//     arrayofButton[2].type = 3;
+//     menu.selectedEV = 4;
+//     button_state = 1;
+//     break;
+//   case 101: // s3
+//     arrayofButton[2].type = 2;
+//     menu.selectedEV = 3;
+//     button_state = 1;
+//     break;
+//   case 122: // s2
+//     arrayofButton[2].type = 1;
+//     menu.selectedEV = 2;
+//     button_state = 1;
+//     break;
+//   case 97: // s1
+//     arrayofButton[2].type = 0;
+//     menu.selectedEV = 1;
+//     button_state = 1;
+//     break;
+//   case 18:
+//     break;
+//   }
+// }
 
 void loop()
 {
   wdt_reset(); // reset watchdog
-
-  // to uncomment with real button
-  // for (int i = 0; i < 3; i++)
-  //{
-  //   arrayofButton[i].readEvent();
-  //   switch (arrayofButton[i].getEvent())
-  //   {
-  //   case arrayofButton[i].EVENT_PRESSED:
-  //     if (button_state == 0)
-  //     {
-  //       Serial.println(F("Button Pressed"));
-  //       select_button(arrayofButton[i].getSelection());
-  //       button_state = 1;
-  //     }
-  //     break;
-  //   case arrayofButton[i].EVENT_RELEASED:
-  //     button_state = 0;
-  //     break;
-  //   }
-  // }
-
-  select(); // to remove()
-
+  for (int i = 0; i < 3; i++)
+  {
+    arrayofButton[i].readEvent();
+    switch (arrayofButton[i].getEvent())
+    {
+    case EVENT_PRESSED:
+      if (button_state == 0)
+      {
+        select_button(arrayofButton[i].getSelection());
+        button_state = 1;
+      }
+      break;
+    case EVENT_RELEASED:
+      button_state = 0;
+      break;
+    }
+  }
+  // select(); // to remove()
   u8g.firstPage(); // Select the first memory page of the scrren
   do
   {
     print_screen();
   } while (u8g.nextPage()); // Select the next page
-
   check_inactiveScreen();
   loop_actualization();
   reset_button();
   check_error();
-  button_state = 0; // to remove
 }
 
 void check_inactiveScreen()
 {
   if (button_state == 1 && menu.inactive > 5)
   {
+    Serial.println(F("activate screen"));
     main_screen();
     menu.inactive = 0;
     digitalWrite(pin_screen, HIGH);
@@ -341,7 +367,7 @@ void reset_button()
 
 void check_error()
 {
-  if (module_state[0] > 0 || module_state[1] > 0)
+  if (error[0] > 0 || error[1] > 0)
   {
     digitalWrite(pin_led, HIGH);
   }
@@ -352,7 +378,7 @@ void check_error()
 void print_screen()
 {
   // u8g.setFont(u8g_font_unifont);
-  menu.getClock(module_state);
+  menu.getClock(error);
 
   if (menu.inactive < 5)
   {
@@ -592,7 +618,7 @@ int read_aht21()
   else
   {
     temperature = eeprom.Read(mem_dayTemp);
-    module_state[0] = 1;
+    error[0] = 1;
   }
   return temperature;
 }
@@ -651,21 +677,33 @@ void loop_actualization()
   // Start every 5 min one EV mode
   if (menu.manual_all > 0)
   {
+    // if EV desactivated, don't start it
+    if (eeprom.Read(mem_state + (10 * menu.manual_all)))
+      manual_couter = 6;
+
+    // if counter is 0, start the EV
     if (manual_couter == 0)
       arrayOfEV[menu.manual_all - 1].remainingTimeOn = 5;
 
+    // actualization of remaining time every minute
     if (menu.rtc_min != menu.min)
     {
       manual_couter++;
     }
+
+    // if time is over, go to the next EV
     if (manual_couter > 5)
     {
       manual_couter = 0;
       menu.manual_all++;
     }
 
-    if (menu.manual_all > 6)
+    // if all EV has been started, reset the mode
+    if (menu.manual_all > 5)
+    {
       menu.manual_all = 0;
+      manual_couter = 0;
+    }
   }
 
   // Stop all EV
@@ -675,6 +713,10 @@ void loop_actualization()
       arrayOfEV[i].remainingTimeOn = 0;
 
     menu.stop_all = false;
+
+    // stop the manual all mode
+    menu.manual_all = 0;
+    manual_couter = 0;
   }
 
   // If EV has been desactivated, stop it

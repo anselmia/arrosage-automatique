@@ -1,5 +1,4 @@
 #include "ev.h"
-#include "Arduino.h"
 
 EV::EV(int pin, int numEV)
 {
@@ -21,13 +20,13 @@ void EV::init()
 void EV::ON()
 {
     evState = 1;
-    digitalWrite(evPin, HIGH);
+    digitalWrite(evPin, LOW);
 }
 
 void EV::OFF()
 {
     evState = 0;
-    digitalWrite(evPin, LOW);
+    digitalWrite(evPin, HIGH);
 }
 
 void EV::update_state()

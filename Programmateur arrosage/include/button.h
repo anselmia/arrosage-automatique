@@ -13,7 +13,7 @@ class BUTTON
 {
 private:
     int buttonPin;
-    byte buttonState;
+    int buttonState;
     int buttonSelection;
     byte buttonEvent;
     int readButton();

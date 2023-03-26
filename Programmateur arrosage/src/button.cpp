@@ -7,52 +7,55 @@ BUTTON::BUTTON(int pin)
     buttonState = NOT_PRESSED;
     buttonSelection = -1;
     buttonEvent = NO_EVENT;
-    type = -1;
 }
 
 int BUTTON::readButton()
 {
-    int selectedButton = (analogRead(buttonPin) + 190) / 128;
-    int newButtonSelection = buttonSelection; /* Ã  priori rien ne change */
+    int buttonNumber = (analogRead(buttonPin) + 64) / 128;
+    Serial.println(analogRead(buttonPin));
+    int newButtonSelection = buttonSelection;
+
     switch (buttonState)
     {
     case NOT_PRESSED:
-        if (selectedButton < 9)
+        if (buttonNumber < 8)
+        {
             buttonState = PUSHED;
-        break;
-    case PUSHED:
-        if (selectedButton < 9)
-        {
-            buttonState = PRESSED;
-            newButtonSelection = selectedButton;
-        }
-        else
-        {
-            buttonState = NOT_PRESSED;
-        }
-        break;
-    case PRESSED:
-        if (selectedButton == 9)
-        {
-            buttonState = NOT_PRESSED;
-            newButtonSelection = -1;
+            break;
+        case PUSHED:
+            if (buttonNumber < 7)
+            {
+                buttonState = PRESSED;
+                newButtonSelection = buttonNumber;
+                Serial.println(buttonNumber);
+            }
+            else
+                buttonState = NOT_PRESSED;
+            break;
+        case PRESSED:
+            if (buttonNumber == 8)
+            {
+                buttonState = NOT_PRESSED;
+                newButtonSelection = -1;
+            }
+            break;
         }
     }
-
     return newButtonSelection;
 }
 
 void BUTTON::readEvent()
 {
-    int selection = readButton();
+    int newButtonSelection = readButton();
 
-    if (selection == buttonState)
+    if (newButtonSelection == buttonSelection)
         buttonEvent = NO_EVENT;
-    if (selection >= 0 && buttonSelection == -1)
+    if (newButtonSelection >= 0 && buttonSelection == -1)
         buttonEvent = EVENT_PRESSED;
-    if (selection == -1 && buttonSelection >= 0)
+    if (newButtonSelection == -1 && buttonSelection >= 0)
         buttonEvent = EVENT_RELEASED;
-    buttonSelection = selection;
+
+    buttonSelection = newButtonSelection;
 }
 
 int BUTTON::getSelection()

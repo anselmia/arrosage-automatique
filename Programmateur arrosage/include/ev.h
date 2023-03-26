@@ -1,6 +1,7 @@
 #ifndef EV_h
 #define EV_h
 #include "myeeprom.h"
+#include "Arduino.h"
 
 const int max_time_on_ev = 20;
 
