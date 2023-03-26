@@ -678,7 +678,7 @@ void loop_actualization()
   if (menu.manual_all > 0)
   {
     // if EV desactivated, don't start it
-    if (eeprom.Read(mem_state + (10 * menu.manual_all)))
+    if (eeprom.Read(mem_state + (10 * menu.manual_all)) == 0)
       manual_couter = 6;
 
     // if counter is 0, start the EV
