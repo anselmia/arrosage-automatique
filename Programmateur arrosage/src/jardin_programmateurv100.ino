@@ -1,9 +1,3 @@
-/* Code to relay module
-  1,2,3,4,5,6,7 : select the output pin for desired ev
-  100: Set the selected output to LOW
-  101: Set the selected output to HIGH
-  102: Set all output to low
-*/
 #include <Wire.h> //i2c
 #include "Arduino.h"
 #include "myeeprom.h"
@@ -75,6 +69,7 @@ MENU menu = MENU();
    1 : Clock */
 int error[2];
 
+// manual all time counter
 int manual_couter = 0;
 
 // Text buffer
@@ -86,8 +81,15 @@ U8GLIB_ST7920_128X64_4X u8g(13, 11, 10);
 // Aht21 sensor
 AHT20 aht20;
 
+// init millis
+unsigned long init_millis;
+unsigned long init_duration = 10000;
+
 void setup()
 {
+  init_millis = millis();
+  init_duration += init_millis;
+
   wdt_enable(WDTO_4S); // watchdog 4 seconde reinitialisation
   Wire.begin();
   Wire.setClock(31000L); // reglage de horloge de i2c
@@ -117,7 +119,7 @@ void Init()
     while (1)
       ;
   }
-  Serial.println("AHT21 acknowledged.");
+  // Serial.println("AHT21 acknowledged.");
 
   // Init EV
   for (int i = 0; i < 6; i++)
@@ -585,7 +587,6 @@ void stop_screen()
   print_on_screen(70, 22, menu.selectedEV);
 }
 
-/*int line 11 22 33 44 55*/
 void draw_cursor()
 {
   u8g.enableCursor();
@@ -624,8 +625,8 @@ int read_aht21()
 }
 
 void update_auto_mode_with_ath21()
-{ // int humidity_value = -1;
-
+{
+  // int humidity_value = -1;
   int temp_value = read_aht21();
 
   int timeon;
@@ -752,8 +753,14 @@ void loop_actualization()
     for (int i = 0; i < 6; i++)
     {
       arrayOfEV[i].updateRemainingTime(menu.hour, menu.day, menu.month, menu.year);
-      arrayOfEV[i].update_state();
     }
+  }
+
+  // Start actuating EV after init time
+  if (millis() > init_duration)
+  {
+    for (int i = 0; i < 6; i++)
+      arrayOfEV[i].update_state();
   }
 }
 
