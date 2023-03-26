@@ -12,7 +12,7 @@ BUTTON::BUTTON(int pin)
 int BUTTON::readButton()
 {
     int buttonNumber = (analogRead(buttonPin) + 64) / 128;
-    Serial.println(analogRead(buttonPin));
+    //Serial.println(analogRead(buttonPin));
     int newButtonSelection = buttonSelection;
 
     switch (buttonState)
@@ -27,7 +27,7 @@ int BUTTON::readButton()
             {
                 buttonState = PRESSED;
                 newButtonSelection = buttonNumber;
-                Serial.println(buttonNumber);
+               //Serial.println(buttonNumber);
             }
             else
                 buttonState = NOT_PRESSED;

@@ -107,18 +107,18 @@ void MENU::forward()
         break;
     case 8:
         manual = true;
-        actualScreen = 2;
-        actualLine = 2;
+        actualScreen = 0;
+        actualLine = 0;
         break;
     case 10:
         delay = true;
-        actualScreen = 2;
-        actualLine = 2;
+        actualScreen = 0;
+        actualLine = 0;
         break;
     case 11:
         stop = true;
-        actualScreen = 2;
-        actualLine = 2;
+        actualScreen = 0;
+        actualLine = 0;
         break;
     }
 }
