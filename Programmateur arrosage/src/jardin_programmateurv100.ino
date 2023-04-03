@@ -8,6 +8,7 @@
 // #include "screen.h"
 #include "menu.h"
 #include <AHT20.h> // AHT21
+#include <avr/sleep.h>
 
 // Program version
 int versio = 1.0;
@@ -89,25 +90,27 @@ void setup()
 {
   init_millis = millis();
   init_duration += init_millis;
-
+  // Serial.begin(9600);
   wdt_enable(WDTO_4S); // watchdog 4 seconde reinitialisation
   Wire.begin();
   Wire.setClock(31000L); // reglage de horloge de i2c
-  u8g.setColorIndex(1);
-
-  //  initialisation de ds1307
-  menu.initClock(error);
-
-  // Serial.begin(9600);
+  Serial.println("init wire");
   Init();
   delay(3000);
 }
 
 void Init()
 {
+  u8g.setColorIndex(1);
+  u8g.setCursorFont(u8g_font_cursor);
+  u8g.setCursorStyle(144);
+  Serial.println("init screen");
+
   // Init com with ds1307
   inii2c(0x68, 1);
-
+  //  initialisation de ds1307
+  menu.initClock(error);
+  Serial.println("clock ok");
   Wire.begin(); // Join I2C bus
   if (aht20.begin() == false)
   {
@@ -115,11 +118,13 @@ void Init()
     {
       u8g.setFont(u8g_font_tpss);
       u8g.drawStr(5, 44, "AHT21 Not found");
+      Serial.println("AHT21 Not found");
     } while (u8g.nextPage());
     while (1)
       ;
   }
-  // Serial.println("AHT21 acknowledged.");
+
+  Serial.println("AHT21 ok");
 
   // Init EV
   for (int i = 0; i < 6; i++)
@@ -130,13 +135,11 @@ void Init()
   pinMode(pin_screen, OUTPUT);
 
   // SWitch On the screen
-  digitalWrite(pin_screen, HIGH);
+  digitalWrite(pin_screen, LOW);
   delay(200);
 
   // Init memory
   // eeprom.init_memory();
-  u8g.setCursorFont(u8g_font_cursor);
-  u8g.setCursorStyle(144);
 
   u8g.firstPage(); // SÃ©lectionne la 1er page mÃ©moire de l'Ã©cran
   do
@@ -311,8 +314,14 @@ void select_button(int selected_button)
 //   }
 // }
 
+void sleep()
+{
+  sleep_enable();
+  attachInterrupt(ana(pin), function, mode);
+}
 void loop()
 {
+  Serial.println("loop");
   wdt_reset(); // reset watchdog
   for (int i = 0; i < 3; i++)
   {
@@ -350,14 +359,14 @@ void check_inactiveScreen()
     Serial.println(F("activate screen"));
     main_screen();
     menu.inactive = 0;
-    digitalWrite(pin_screen, HIGH);
+    digitalWrite(pin_screen, LOW);
   }
 
   if (button_state == 0 && menu.rtc_min != menu.min)
     menu.inactive++;
 
   if (menu.inactive > 5)
-    digitalWrite(pin_screen, LOW);
+    digitalWrite(pin_screen, HIGH);
 }
 
 void reset_button()
@@ -379,7 +388,6 @@ void check_error()
 
 void print_screen()
 {
-  // u8g.setFont(u8g_font_unifont);
   menu.getClock(error);
 
   if (menu.inactive < 5)

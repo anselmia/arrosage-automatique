@@ -22,19 +22,13 @@ void MENU::initClock(int (&error)[2])
 {
     rtc.begin();
     rtc.start();
-    sec = 0;
-    min = 0;
-    hour = 0;
-    day = 0;
-    month = 0;
-    year = 0;
+
     getClock(error);
 }
 
 void MENU::getClock(int (&error)[2])
 {
     rtc.get(&sec, &min, &hour, &day, &month, &year);
-    // clock.updateTime(&sec, &min, &hour, &day, &month, &year); // to remove when real clock
 
     if (day == 165)
         error[1] = 1;
@@ -302,7 +296,7 @@ void MENU::updateValue(int dir, int value)
                 }
                 else
                 {
-                    day = day + 1;
+                    day = day - 1;
                     if (day < 1)
                     {
                         day = 31;
