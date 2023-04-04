@@ -8,7 +8,6 @@
 // #include "screen.h"
 #include "menu.h"
 #include <AHT20.h> // AHT21
-#include <avr/sleep.h>
 
 // Program version
 int versio = 1.0;
@@ -314,11 +313,6 @@ void select_button(int selected_button)
 //   }
 // }
 
-void sleep()
-{
-  sleep_enable();
-  attachInterrupt(ana(pin), function, mode);
-}
 void loop()
 {
   Serial.println("loop");
@@ -360,6 +354,7 @@ void check_inactiveScreen()
     main_screen();
     menu.inactive = 0;
     digitalWrite(pin_screen, LOW);
+    u8g.sleepOn();
   }
 
   if (button_state == 0 && menu.rtc_min != menu.min)
@@ -367,6 +362,7 @@ void check_inactiveScreen()
 
   if (menu.inactive > 5)
     digitalWrite(pin_screen, HIGH);
+  u8g.sleepOff();
 }
 
 void reset_button()
