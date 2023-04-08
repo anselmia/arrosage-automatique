@@ -37,7 +37,7 @@ void EV::update_state()
         ON();
 }
 
-void EV::calculate_next_day(byte day, byte month, int year)
+void EV::calculate_next_day(MYEEPROM eeprom, byte day, byte month, int year)
 {
     byte day_to_add;
     byte day_in_month;
@@ -103,7 +103,7 @@ int EV::leap_year(int year)
     return days_in_month;
 }
 
-void EV::updateRemainingTime(byte hr, byte min, byte day, byte month, int year)
+void EV::updateRemainingTime(MYEEPROM eeprom, byte hr, byte min, byte day, byte month, int year)
 {
     if (remainingTimeOn != 0)
     {
@@ -142,7 +142,7 @@ void EV::updateRemainingTime(byte hr, byte min, byte day, byte month, int year)
                                 time_on = max_time_on_ev;
 
                             remainingTimeOn = time_on;
-                            calculate_next_day(day, month, year);
+                            calculate_next_day(eeprom, day, month, year);
                         }
                     }
                 }
@@ -156,7 +156,7 @@ void EV::updateRemainingTime(byte hr, byte min, byte day, byte month, int year)
     }
 }
 
-void EV::updateSeason(byte timeon, byte freq)
+void EV::updateSeason(MYEEPROM eeprom, byte timeon, byte freq)
 {
     eeprom.write(mem_autoTimeOn + (10 * num), timeon);
     eeprom.write(mem_autoFreq + (10 * num), freq);

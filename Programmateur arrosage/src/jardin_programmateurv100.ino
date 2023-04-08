@@ -71,6 +71,10 @@ bool error[2];
 // manual all time counter
 int manual_couter = 0;
 
+// inactive time
+int inactive = 0;
+bool screen_state = true;
+
 // Text buffer
 char buf[20];
 
@@ -88,11 +92,11 @@ void setup()
 {
   init_millis = millis();
   init_duration += init_millis;
-  Serial.begin(9600);
+  // Serial.begin(9600);
   wdt_enable(WDTO_4S); // watchdog 4 seconde reinitialisation
   Wire.begin();
   Wire.setClock(31000L); // reglage de horloge de i2c
-  Serial.println("init wire");
+  Serial.println(F("init wire"));
   Init();
   delay(3000);
 }
@@ -102,13 +106,13 @@ void Init()
   u8g.setColorIndex(1);
   u8g.setCursorFont(u8g_font_cursor);
   u8g.setCursorStyle(144);
-  Serial.println("init screen");
+  Serial.println(F("init screen"));
 
   // Init com with ds1307
   inii2c(0x68, 1);
   //  initialisation de ds1307
   menu.initClock(error);
-  Serial.println("clock ok");
+  Serial.println(F("clock ok"));
   Wire.begin(); // Join I2C bus
   if (aht20.begin() == false)
   {
@@ -116,13 +120,13 @@ void Init()
     {
       u8g.setFont(u8g_font_tpss);
       u8g.drawStr(5, 44, "AHT21 Not found");
-      Serial.println("AHT21 Not found");
+      Serial.println(F("AHT21 Not found"));
     } while (u8g.nextPage());
     while (1)
       ;
   }
 
-  Serial.println("AHT21 ok");
+  Serial.println(F("AHT21 ok"));
 
   // Init EV
   for (byte i = 0; i < 6; i++)
@@ -188,12 +192,12 @@ void select_button(byte selected_button)
   {
   case 0: // +
     arrayofButton[1].type = 0;
-    menu.updateValue(1);
+    menu.updateValue(eeprom, 1);
     // Serial.println("+");
     break;
   case 1: // -
     arrayofButton[1].type = 1;
-    menu.updateValue(0);
+    menu.updateValue(eeprom, 0);
     // Serial.println("-");
     break;
   }
@@ -233,12 +237,8 @@ void select_button(byte selected_button)
   }
 }
 
-void loop()
+void read_button()
 {
-  // Update the clock
-  menu.getClock(error);
-
-  wdt_reset(); // reset watchdog
   for (byte i = 0; i < 3; i++)
   {
     arrayofButton[i].readEvent();
@@ -247,7 +247,6 @@ void loop()
     case EVENT_PRESSED:
       if (button_state == false)
       {
-        Serial.println(F("event pressed"));
         select_button(arrayofButton[i].getSelection());
         button_state = true;
       }
@@ -257,33 +256,47 @@ void loop()
       break;
     }
   }
-  // select(); // to remove()
+}
+
+void loop()
+{
+  wdt_reset();            // reset watchdog
+  menu.getClock(error);   // Check inactive screen
+  check_inactiveScreen(); // Update the clock
+  read_button();          // Read the buttons
+
   u8g.firstPage(); // Select the first memory page of the scrren
   do
   {
     print_screen();
   } while (u8g.nextPage()); // Select the next page
-  // check_inactiveScreen();
-  loop_actualization();
+
+  ev_actualization(); // Update ev state
   reset_button();
   check_error();
 }
 
 void check_inactiveScreen()
 {
-  if (button_state == true && menu.inactive > 300)
+  if (button_state == false && menu.rtc_sec != menu.sec)
+    inactive++;
+  else if (button_state == true)
+    inactive = 0;
+
+  if (button_state == true && screen_state == false)
   {
-    Serial.println(F("activate screen"));
-    main_screen();
-    menu.inactive = 0;
+    screen_state = true;
+    inactive = 0;
     digitalWrite(pin_screen, LOW);
+    u8g.sleepOff();
   }
 
-  if (button_state == false && menu.rtc_sec != menu.sec)
-    menu.inactive++;
-
-  if (menu.inactive > 300)
+  if (inactive > 30)
+  {
     digitalWrite(pin_screen, HIGH);
+    u8g.sleepOn();
+    screen_state = false;
+  }
 }
 
 void reset_button()
@@ -305,53 +318,48 @@ void check_error()
 
 void print_screen()
 {
-  if (menu.inactive < 5)
+  switch (menu.actualScreen)
   {
-    switch (menu.actualScreen)
-    {
-    case 0:
-      main_screen();
-      break;
-    case 1:
-      menu_screen();
-      draw_cursor();
-      break;
-    case 2:
-      parameter_screen();
-      draw_cursor();
-      break;
-    case 4:
-      auto_mode_screen();
-      draw_cursor();
-      break;
-    case 6:
-      clock_parameter_screen();
-      draw_cursor();
-      break;
-    case 7:
-      other_parameter_screen();
-      draw_cursor();
-      break;
-    case 8:
-      manual_mode_screen();
-      draw_cursor();
-      break;
-    case 9:
-      state_screen();
-      draw_cursor();
-      break;
-    case 10:
-      delay_screen();
-      draw_cursor();
-      break;
-    case 11:
-      stop_screen();
-      draw_cursor();
-      break;
-    }
+  case 0:
+    main_screen();
+    break;
+  case 1:
+    menu_screen();
+    draw_cursor();
+    break;
+  case 2:
+    parameter_screen();
+    draw_cursor();
+    break;
+  case 4:
+    auto_mode_screen();
+    draw_cursor();
+    break;
+  case 6:
+    clock_parameter_screen();
+    draw_cursor();
+    break;
+  case 7:
+    other_parameter_screen();
+    draw_cursor();
+    break;
+  case 8:
+    manual_mode_screen();
+    draw_cursor();
+    break;
+  case 9:
+    state_screen();
+    draw_cursor();
+    break;
+  case 10:
+    delay_screen();
+    draw_cursor();
+    break;
+  case 11:
+    stop_screen();
+    draw_cursor();
+    break;
   }
-  else
-    u8g.disableCursor();
 }
 
 void main_screen()
@@ -561,11 +569,11 @@ void update_auto_mode_with_ath21()
   }
 
   for (byte i = 0; i < 6; i++)
-    arrayOfEV[i].updateSeason(timeon, freq);
+    arrayOfEV[i].updateSeason(eeprom, timeon, freq);
 }
 
 // Update all EV state based on clock
-void loop_actualization()
+void ev_actualization()
 {
   // EV delayed
   if (menu.delay == true)
@@ -667,7 +675,7 @@ void loop_actualization()
     // Calculate next day on and remaining time
     for (byte i = 0; i < 6; i++)
     {
-      arrayOfEV[i].updateRemainingTime(menu.hour, menu.min, menu.day, menu.month, menu.year);
+      arrayOfEV[i].updateRemainingTime(eeprom, menu.hour, menu.min, menu.day, menu.month, menu.year);
     }
   }
 

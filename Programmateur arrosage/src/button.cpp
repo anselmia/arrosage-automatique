@@ -45,8 +45,6 @@ int BUTTON::readButton()
 void BUTTON::readEvent()
 {
     int newButtonSelection = readButton();
-    Serial.println(buttonSelection);
-    Serial.println(newButtonSelection);
     if (newButtonSelection == buttonSelection)
         buttonEvent = NO_EVENT;
     if (newButtonSelection >= 0 && buttonSelection == -1)

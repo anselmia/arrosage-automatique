@@ -2,7 +2,6 @@
 
 MENU::MENU()
 {
-    eeprom = MYEEPROM();
     rtc_sec = 0;
     rtc_day = 0;
     screenValue = 0;
@@ -11,7 +10,6 @@ MENU::MENU()
     cursorPos = 0;
     delay = false;
     stop = false;
-    inactive = 0;
     manual = false;
     stop_all = false;
     manual_all = 0;
@@ -228,7 +226,7 @@ void MENU::down()
     }
 }
 
-void MENU::updateValue(byte dir, byte value)
+void MENU::updateValue(MYEEPROM eeprom, byte dir, byte value)
 {
     byte mem_value;
     byte max_value;
