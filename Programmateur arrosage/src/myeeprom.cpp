@@ -5,9 +5,9 @@ MYEEPROM::MYEEPROM()
 {
 }
 
-void MYEEPROM::write(int mem_adress, int val)
+void MYEEPROM::write(byte mem_adress, byte val)
 {
-    int mem_value;
+    byte mem_value;
     mem_value = EEPROM.read(mem_adress);
     if (mem_value != val)
     {
@@ -15,16 +15,16 @@ void MYEEPROM::write(int mem_adress, int val)
     }
 }
 
-int MYEEPROM::Read(int mem_adress)
+byte MYEEPROM::Read(byte mem_adress)
 {
-    int mem_value;
+    byte mem_value;
     mem_value = EEPROM.read(mem_adress);
     return mem_value;
 }
 
 void MYEEPROM::init_memory()
 {
-    for (int i = 0; i < 6; i++)
+    for (byte i = 0; i < 6; i++)
     {
         write(mem_autoTimeOn + (10 * (i + 1)), 0);
         write(mem_autoFreq + (10 * (i + 1)), 0);

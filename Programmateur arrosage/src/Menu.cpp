@@ -3,8 +3,7 @@
 MENU::MENU()
 {
     eeprom = MYEEPROM();
-    // clock = CLOCK();
-    rtc_min = -1;
+    rtc_sec = 0;
     rtc_day = 0;
     screenValue = 0;
     actualScreen = 0;
@@ -18,7 +17,7 @@ MENU::MENU()
     manual_all = 0;
 }
 
-void MENU::initClock(int (&error)[2])
+void MENU::initClock(bool (&error)[2])
 {
     rtc.begin();
     rtc.start();
@@ -26,14 +25,14 @@ void MENU::initClock(int (&error)[2])
     getClock(error);
 }
 
-void MENU::getClock(int (&error)[2])
+void MENU::getClock(bool (&error)[2])
 {
     rtc.get(&sec, &min, &hour, &day, &month, &year);
 
     if (day == 165)
-        error[1] = 1;
+        error[1] = true;
     else
-        error[1] = 0;
+        error[1] = false;
 }
 
 void MENU::forward()
@@ -229,10 +228,10 @@ void MENU::down()
     }
 }
 
-void MENU::updateValue(int dir, int value)
+void MENU::updateValue(byte dir, byte value)
 {
-    int mem_value;
-    int max_value;
+    byte mem_value;
+    byte max_value;
     int mem_adress = -1;
     switch (actualScreen)
     {
@@ -306,7 +305,6 @@ void MENU::updateValue(int dir, int value)
                 rtc.stop();
                 rtc.set(sec, min, hour, day, month, year);
                 rtc.start();
-                // clock.days = day; // to remove
                 break;
             case 1: // month
                 if (dir == 1)
@@ -324,7 +322,6 @@ void MENU::updateValue(int dir, int value)
                 rtc.stop();
                 rtc.set(sec, min, hour, day, month, year);
                 rtc.start();
-                // clock.months = month; // to remove
                 break;
             case 2: // annee
                 if (dir == 1)
@@ -342,7 +339,6 @@ void MENU::updateValue(int dir, int value)
                 rtc.stop();
                 rtc.set(sec, min, hour, day, month, year);
                 rtc.start();
-                // clock.years = year; // to remove
                 break;
             }
             break;
@@ -365,7 +361,6 @@ void MENU::updateValue(int dir, int value)
                 rtc.stop();
                 rtc.set(sec, min, hour, day, month, year);
                 rtc.start();
-                // clock.hrs = hour; // to remove
                 break;
 
             case 1: // minute
@@ -384,14 +379,12 @@ void MENU::updateValue(int dir, int value)
                 rtc.stop();
                 rtc.set(sec, min, hour, day, month, year);
                 rtc.start();
-                // clock.mins = min; // to remove
                 break;
             case 2: // seconde
                 sec = 0;
                 rtc.stop();
                 rtc.set(sec, min, hour, day, month, year);
                 rtc.start();
-                // clock.secs = 0; // to remove
                 break;
             }
         }
@@ -477,7 +470,7 @@ void MENU::updateValue(int dir, int value)
     }
 }
 
-void MENU::selectEV(int ev)
+void MENU::selectEV(byte ev)
 {
     switch (actualScreen)
     {
@@ -496,7 +489,7 @@ void MENU::selectEV(int ev)
     }
 }
 
-void MENU::moveCursor(int maxPos)
+void MENU::moveCursor(byte maxPos)
 {
     cursorPos++;
     if (cursorPos == maxPos)

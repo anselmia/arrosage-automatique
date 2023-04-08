@@ -4,26 +4,26 @@
 #include "Arduino.h"
 #include <DS1307.h>
 
-const int max_time_on_ev = 20;
+const byte max_time_on_ev = 20;
 
 class EV
 {
 private:
-    int num;
-    int evPin;
-    int evState;
+    byte num;
+    byte evPin;
+    byte evState;
     MYEEPROM eeprom = MYEEPROM();
     int leap_year(int year);
-    void calculate_next_day(int day, int month, int year);
+    void calculate_next_day(byte day, byte month, int year);
     void ON();
     void OFF();
 
 public:
-    EV(int pin, int numEV);
-    int nextDayOn;
+    EV(byte pin, byte numEV);
+    byte nextDayOn;
     int remainingTimeOn;
-    void updateRemainingTime(int hr, int min, int day, int month, int year);
-    void updateSeason(int timeon, int freq);
+    void updateRemainingTime(byte hr, byte min, byte day, byte month, int year);
+    void updateSeason(byte timeon, byte freq);
     void init();
     void update_state();
 };

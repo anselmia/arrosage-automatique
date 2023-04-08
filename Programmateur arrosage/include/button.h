@@ -12,16 +12,16 @@ static const byte EVENT_RELEASED = 2;
 class BUTTON
 {
 private:
-    int buttonPin;
-    int buttonState;
+    byte buttonPin;
+    byte buttonState;
     int buttonSelection;
     byte buttonEvent;
     int readButton();
 
 public:
-    BUTTON(int pin);
+    BUTTON(byte pin);
     int type;
-    int getSelection();
+    byte getSelection();
     byte getEvent();
     void readEvent();
 };

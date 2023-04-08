@@ -1,6 +1,6 @@
 #include "ev.h"
 
-EV::EV(int pin, int numEV)
+EV::EV(byte pin, byte numEV)
 {
     num = numEV;
     evPin = pin;
@@ -37,11 +37,11 @@ void EV::update_state()
         ON();
 }
 
-void EV::calculate_next_day(int day, int month, int year)
+void EV::calculate_next_day(byte day, byte month, int year)
 {
-    int day_to_add;
-    int day_in_month;
-    int next_day;
+    byte day_to_add;
+    byte day_in_month;
+    byte next_day;
 
     day_to_add = eeprom.Read(mem_autoFreq + (10 * num));
     next_day = day + day_to_add;
@@ -76,7 +76,7 @@ void EV::calculate_next_day(int day, int month, int year)
 
 int EV::leap_year(int year)
 {
-    int days_in_month;
+    byte days_in_month;
     // leap year if perfectly divisible by 400
     if (year % 400 == 0)
     {
@@ -103,7 +103,7 @@ int EV::leap_year(int year)
     return days_in_month;
 }
 
-void EV::updateRemainingTime(int hr, int min, int day, int month, int year)
+void EV::updateRemainingTime(byte hr, byte min, byte day, byte month, int year)
 {
     if (remainingTimeOn != 0)
     {
@@ -135,7 +135,7 @@ void EV::updateRemainingTime(int hr, int min, int day, int month, int year)
                         if (nextDayOn == day)
                         {
                             // mise en route
-                            time_on = eeprom.Read(mem_autoTimeOn + (10 * num));
+                            time_on = eeprom.Read(mem_autoTimeOn + (10 * num)) * 60;
                             if (time_on <= 0)
                                 time_on = 0;
                             if (time_on >= max_time_on_ev)
@@ -156,7 +156,7 @@ void EV::updateRemainingTime(int hr, int min, int day, int month, int year)
     }
 }
 
-void EV::updateSeason(int timeon, int freq)
+void EV::updateSeason(byte timeon, byte freq)
 {
     eeprom.write(mem_autoTimeOn + (10 * num), timeon);
     eeprom.write(mem_autoFreq + (10 * num), freq);

@@ -1,7 +1,7 @@
 #include "button.h"
 #include "Arduino.h"
 
-BUTTON::BUTTON(int pin)
+BUTTON::BUTTON(byte pin)
 {
     buttonPin = pin;
     buttonState = NOT_PRESSED;
@@ -11,8 +11,7 @@ BUTTON::BUTTON(int pin)
 
 int BUTTON::readButton()
 {
-    int buttonNumber = (analogRead(buttonPin) + 64) / 128;
-    //Serial.println(analogRead(buttonPin));
+    byte buttonNumber = (analogRead(buttonPin) + 64) / 128;
     int newButtonSelection = buttonSelection;
 
     switch (buttonState)
@@ -27,7 +26,6 @@ int BUTTON::readButton()
             {
                 buttonState = PRESSED;
                 newButtonSelection = buttonNumber;
-               //Serial.println(buttonNumber);
             }
             else
                 buttonState = NOT_PRESSED;
@@ -47,7 +45,8 @@ int BUTTON::readButton()
 void BUTTON::readEvent()
 {
     int newButtonSelection = readButton();
-
+    Serial.println(buttonSelection);
+    Serial.println(newButtonSelection);
     if (newButtonSelection == buttonSelection)
         buttonEvent = NO_EVENT;
     if (newButtonSelection >= 0 && buttonSelection == -1)
@@ -58,7 +57,7 @@ void BUTTON::readEvent()
     buttonSelection = newButtonSelection;
 }
 
-int BUTTON::getSelection()
+byte BUTTON::getSelection()
 {
     return buttonSelection;
 }

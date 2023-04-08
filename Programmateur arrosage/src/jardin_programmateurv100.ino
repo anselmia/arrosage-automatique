@@ -5,29 +5,28 @@
 #include <avr/wdt.h>
 #include "button.h"
 #include "ev.h"
-// #include "screen.h"
 #include "menu.h"
 #include <AHT20.h> // AHT21
 
 // Program version
-int versio = 1.0;
+byte versio = 1;
 
 // Read / Write eeprom
 MYEEPROM eeprom = MYEEPROM();
 
 /* EV pins*/
-const int pin_ev1 = 0;
-const int pin_ev2 = 1;
-const int pin_ev3 = 2;
-const int pin_ev4 = 3;
-const int pin_ev5 = 4;
-const int pin_ev6 = 5;
+const byte pin_ev1 = 0;
+const byte pin_ev2 = 1;
+const byte pin_ev3 = 2;
+const byte pin_ev4 = 3;
+const byte pin_ev5 = 4;
+const byte pin_ev6 = 5;
 
 /* Error led pins*/
-const int pin_led = 6;
+const byte pin_led = 6;
 
 /* Pin alim scrren */
-const int pin_screen = 7;
+const byte pin_screen = 7;
 
 // EV
 EV arrayOfEV[6] = {EV(pin_ev1, 1), EV(pin_ev2, 2), EV(pin_ev3, 3), EV(pin_ev4, 4), EV(pin_ev5, 5), EV(pin_ev6, 6)};
@@ -35,10 +34,10 @@ EV arrayOfEV[6] = {EV(pin_ev1, 1), EV(pin_ev2, 2), EV(pin_ev3, 3), EV(pin_ev4, 4
 // SCREEN screen;
 
 // bouton
-int button_state = 0;
-const int pin_button_line1 = 0;
-const int pin_button_line2 = 1;
-const int pin_button_line3 = 3;
+bool button_state = false;
+const byte pin_button_line1 = 0;
+const byte pin_button_line2 = 1;
+const byte pin_button_line3 = 3;
 
 /* type of button
 Line 1 :
@@ -67,7 +66,7 @@ MENU menu = MENU();
 // error
 /* 0 : temperature
    1 : Clock */
-int error[2];
+bool error[2];
 
 // manual all time counter
 int manual_couter = 0;
@@ -89,7 +88,7 @@ void setup()
 {
   init_millis = millis();
   init_duration += init_millis;
-  // Serial.begin(9600);
+  Serial.begin(9600);
   wdt_enable(WDTO_4S); // watchdog 4 seconde reinitialisation
   Wire.begin();
   Wire.setClock(31000L); // reglage de horloge de i2c
@@ -126,7 +125,7 @@ void Init()
   Serial.println("AHT21 ok");
 
   // Init EV
-  for (int i = 0; i < 6; i++)
+  for (byte i = 0; i < 6; i++)
     arrayOfEV[i].init();
 
   // set output for error led and screen
@@ -145,7 +144,7 @@ void Init()
   {
     u8g.setFont(u8g_font_tpss);            // Utilise la police de caractÃ¨re standard
     u8g.drawStr(30, 11, "Initialisation"); // 12 line
-    if (error[1] == 1)
+    if (error[1] == true)
       u8g.drawStr(10, 22, "erreur horloge");
 
     u8g.drawStr(5, 44, "version");
@@ -153,13 +152,13 @@ void Init()
   } while (u8g.nextPage());
 }
 
-void inii2c(int adr, int i)
+void inii2c(byte adr, byte i)
 {
   Wire.beginTransmission(adr);
-  error[i] = Wire.endTransmission(true);
+  error[i] = (bool)Wire.endTransmission(true);
 }
 
-void select_button(int selected_button)
+void select_button(byte selected_button)
 {
   switch (arrayofButton[0].getSelection())
   {
@@ -234,103 +233,27 @@ void select_button(int selected_button)
   }
 }
 
-// to remove
-// void select()
-// {
-//   byte selectedButton;
-//   selectedButton = Serial.read();
-//   switch (selectedButton)
-//   {
-//   case 54: // right
-//     arrayofButton[0].type = 0;
-//     menu.forward();
-//     button_state = 1;
-//     break;
-//   case 56: // up
-//     arrayofButton[0].type = 1;
-//     menu.up();
-//     button_state = 1;
-//     break;
-//   case 52: // left
-//     arrayofButton[0].type = 2;
-//     menu.backward();
-//     button_state = 1;
-//     break;
-//   case 50: // down
-//     arrayofButton[0].type = 3;
-//     menu.down();
-//     button_state = 1;
-//     break;
-//   }
-//
-//   switch (selectedButton)
-//   {
-//   case 43: // +
-//     arrayofButton[1].type = 0;
-//     menu.updateValue(1);
-//     button_state = 1;
-//     break;
-//   case 45: // -
-//     arrayofButton[1].type = 1;
-//     menu.updateValue(0);
-//     button_state = 1;
-//     break;
-//   }
-//
-//   switch (selectedButton)
-//   {
-//   case 121: // s6
-//     arrayofButton[2].type = 5;
-//     menu.selectedEV = 6;
-//     button_state = 1;
-//   case 116: // s5
-//     arrayofButton[2].type = 4;
-//     menu.selectedEV = 5;
-//     button_state = 1;
-//     break;
-//   case 114: // s4
-//     arrayofButton[2].type = 3;
-//     menu.selectedEV = 4;
-//     button_state = 1;
-//     break;
-//   case 101: // s3
-//     arrayofButton[2].type = 2;
-//     menu.selectedEV = 3;
-//     button_state = 1;
-//     break;
-//   case 122: // s2
-//     arrayofButton[2].type = 1;
-//     menu.selectedEV = 2;
-//     button_state = 1;
-//     break;
-//   case 97: // s1
-//     arrayofButton[2].type = 0;
-//     menu.selectedEV = 1;
-//     button_state = 1;
-//     break;
-//   case 18:
-//     break;
-//   }
-// }
-
 void loop()
 {
-  Serial.println("loop");
+  // Update the clock
+  menu.getClock(error);
+
   wdt_reset(); // reset watchdog
-  for (int i = 0; i < 3; i++)
+  for (byte i = 0; i < 3; i++)
   {
     arrayofButton[i].readEvent();
     switch (arrayofButton[i].getEvent())
     {
     case EVENT_PRESSED:
-      if (button_state == 0)
+      if (button_state == false)
       {
+        Serial.println(F("event pressed"));
         select_button(arrayofButton[i].getSelection());
-        button_state = 1;
+        button_state = true;
       }
       break;
     case EVENT_RELEASED:
-      button_state = 0;
+      button_state = false;
       break;
     }
   }
@@ -340,7 +263,7 @@ void loop()
   {
     print_screen();
   } while (u8g.nextPage()); // Select the next page
-  check_inactiveScreen();
+  // check_inactiveScreen();
   loop_actualization();
   reset_button();
   check_error();
@@ -348,21 +271,19 @@ void loop()
 
 void check_inactiveScreen()
 {
-  if (button_state == 1 && menu.inactive > 5)
+  if (button_state == true && menu.inactive > 300)
   {
     Serial.println(F("activate screen"));
     main_screen();
     menu.inactive = 0;
     digitalWrite(pin_screen, LOW);
-    u8g.sleepOn();
   }
 
-  if (button_state == 0 && menu.rtc_min != menu.min)
+  if (button_state == false && menu.rtc_sec != menu.sec)
     menu.inactive++;
 
-  if (menu.inactive > 5)
+  if (menu.inactive > 300)
     digitalWrite(pin_screen, HIGH);
-  u8g.sleepOff();
 }
 
 void reset_button()
@@ -374,7 +295,7 @@ void reset_button()
 
 void check_error()
 {
-  if (error[0] > 0 || error[1] > 0)
+  if (error[0] == true || error[1] == true)
   {
     digitalWrite(pin_led, HIGH);
   }
@@ -384,8 +305,6 @@ void check_error()
 
 void print_screen()
 {
-  menu.getClock(error);
-
   if (menu.inactive < 5)
   {
     switch (menu.actualScreen)
@@ -445,27 +364,27 @@ void main_screen()
   u8g.drawStr(44, 21, buf);
 
   u8g.drawStr(15, 33, "1 : ");
-  print_on_screen(30, 33, arrayOfEV[0].remainingTimeOn);
+  print_on_screen(30, 33, arrayOfEV[0].remainingTimeOn / 60);
   u8g.drawStr(44, 33, ",");
   print_on_screen(50, 33, arrayOfEV[0].nextDayOn);
   u8g.drawStr(15, 44, "2 : ");
-  print_on_screen(30, 44, arrayOfEV[1].remainingTimeOn);
+  print_on_screen(30, 44, arrayOfEV[1].remainingTimeOn / 60);
   u8g.drawStr(44, 44, ",");
   print_on_screen(50, 44, arrayOfEV[1].nextDayOn);
   u8g.drawStr(15, 55, "3 : ");
-  print_on_screen(30, 55, arrayOfEV[2].remainingTimeOn);
+  print_on_screen(30, 55, arrayOfEV[2].remainingTimeOn / 60);
   u8g.drawStr(44, 55, ",");
   print_on_screen(50, 55, arrayOfEV[2].nextDayOn);
   u8g.drawStr(70, 33, "4 : ");
-  print_on_screen(85, 33, arrayOfEV[3].remainingTimeOn);
+  print_on_screen(85, 33, arrayOfEV[3].remainingTimeOn / 60);
   u8g.drawStr(100, 33, ",");
   print_on_screen(106, 33, arrayOfEV[3].nextDayOn);
   u8g.drawStr(70, 44, "5 : ");
-  print_on_screen(85, 44, arrayOfEV[4].remainingTimeOn);
+  print_on_screen(85, 44, arrayOfEV[4].remainingTimeOn / 60);
   u8g.drawStr(100, 44, ",");
   print_on_screen(106, 44, arrayOfEV[4].nextDayOn);
   u8g.drawStr(70, 55, "6 : ");
-  print_on_screen(85, 55, arrayOfEV[5].remainingTimeOn);
+  print_on_screen(85, 55, arrayOfEV[5].remainingTimeOn / 60);
   u8g.drawStr(100, 55, ",");
   print_on_screen(106, 55, arrayOfEV[5].nextDayOn);
 }
@@ -493,7 +412,7 @@ void auto_mode_screen()
   print_on_screen(70, 11, menu.selectedEV);
   // print auto mode state
   u8g.drawStr(15, 22, "Etat :");
-  int mem_value = eeprom.Read(mem_autostate + (menu.selectedEV * 10));
+  byte mem_value = eeprom.Read(mem_autostate + (menu.selectedEV * 10));
   activate_screen(mem_value, 70, 22);
   // print auto time on
   u8g.drawStr(15, 33, "Duree :");
@@ -530,7 +449,7 @@ void other_parameter_screen()
   case 4:
   {
     u8g.drawStr(15, 22, "Saison :");
-    int mem_value = eeprom.Read(mem_autoSeason);
+    byte mem_value = eeprom.Read(mem_autoSeason);
     activate_screen(mem_value, 70, 22);
     u8g.drawStr(15, 33, "Temp. :");
     print_mem_value(80, 33, mem_tempSeason);
@@ -571,7 +490,7 @@ void state_screen()
   u8g.drawStr(15, 22, "Sortie : ");
   print_on_screen(70, 22, menu.selectedEV);
   u8g.drawStr(15, 33, "Etat : ");
-  int mem_value = eeprom.Read(mem_state + (menu.selectedEV * 10));
+  byte mem_value = eeprom.Read(mem_state + (menu.selectedEV * 10));
   activate_screen(mem_value, 70, 33);
 }
 
@@ -600,17 +519,7 @@ void draw_cursor()
     u8g.setCursorPos(12, (menu.actualLine * 11) + 5);
 }
 
-void draw_menu_edge()
-{
-  int x = 0;
-  int y = 0;
-  int length = 168;
-  int height = 64;
-  int r = 1;
-  u8g.drawRFrame(x, y, length, height, r);
-}
-
-int read_aht21()
+byte read_aht21()
 {
   float temperature;
   if (aht20.available() == true)
@@ -623,7 +532,7 @@ int read_aht21()
   else
   {
     temperature = eeprom.Read(mem_dayTemp);
-    error[0] = 1;
+    error[0] = true;
   }
   return temperature;
 }
@@ -631,13 +540,13 @@ int read_aht21()
 void update_auto_mode_with_ath21()
 {
   // int humidity_value = -1;
-  int temp_value = read_aht21();
+  byte temp_value = read_aht21();
 
-  int timeon;
-  int freq;
+  byte timeon;
+  byte freq;
   // eeprom.write(mem_dayHumidity, humidity_value);
 
-  int temp_change_season;
+  byte temp_change_season;
   temp_change_season = eeprom.Read(mem_tempSeason);
 
   if (temp_value <= temp_change_season)
@@ -651,7 +560,7 @@ void update_auto_mode_with_ath21()
     freq = eeprom.Read(mem_sumerFreq);
   }
 
-  for (int i = 0; i < 6; i++)
+  for (byte i = 0; i < 6; i++)
     arrayOfEV[i].updateSeason(timeon, freq);
 }
 
@@ -668,7 +577,7 @@ void loop_actualization()
   // EV started manually
   if (menu.manual == true)
   {
-    arrayOfEV[menu.selectedEV - 1].remainingTimeOn = menu.screenValue;
+    arrayOfEV[menu.selectedEV - 1].remainingTimeOn = menu.screenValue * 60;
     menu.manual = false;
   }
 
@@ -684,20 +593,20 @@ void loop_actualization()
   {
     // if EV desactivated, don't start it
     if (eeprom.Read(mem_state + (10 * menu.manual_all)) == 0)
-      manual_couter = 6;
+      menu.manual_all++;
 
     // if counter is 0, start the EV
     if (manual_couter == 0)
-      arrayOfEV[menu.manual_all - 1].remainingTimeOn = 5;
+      arrayOfEV[menu.manual_all - 1].remainingTimeOn = 300;
 
     // actualization of remaining time every minute
-    if (menu.rtc_min != menu.min)
+    if (menu.rtc_sec != menu.sec)
     {
       manual_couter++;
     }
 
     // if time is over, go to the next EV
-    if (manual_couter > 5)
+    if (manual_couter > 300)
     {
       manual_couter = 0;
       menu.manual_all++;
@@ -714,7 +623,7 @@ void loop_actualization()
   // Stop all EV
   if (menu.stop_all == true)
   {
-    for (int i = 0; i < 6; i++)
+    for (byte i = 0; i < 6; i++)
       arrayOfEV[i].remainingTimeOn = 0;
 
     menu.stop_all = false;
@@ -725,7 +634,7 @@ void loop_actualization()
   }
 
   // If EV has been desactivated, stop it
-  for (int i = 0; i < 6; i++)
+  for (byte i = 0; i < 6; i++)
   {
     if (eeprom.Read(mem_state + (10 * (i + 1))) == 0)
     {
@@ -735,9 +644,12 @@ void loop_actualization()
   }
 
   // Update EV state every minute
-  if (menu.rtc_min != menu.min)
+  if (menu.rtc_sec != menu.sec)
   {
-    int mem_value;
+    // Set saved sec as actual sec
+    menu.rtc_sec = menu.sec;
+
+    byte mem_value;
     // Check Temperature and humidity at 12 o'clock if auto mode on with aht21
     mem_value = eeprom.Read(mem_autoSeason);
     if (mem_value == 1)
@@ -751,10 +663,9 @@ void loop_actualization()
         menu.rtc_day = menu.day;
       }
     }
-    menu.rtc_min = menu.min;
 
     // Calculate next day on and remaining time
-    for (int i = 0; i < 6; i++)
+    for (byte i = 0; i < 6; i++)
     {
       arrayOfEV[i].updateRemainingTime(menu.hour, menu.min, menu.day, menu.month, menu.year);
     }
@@ -763,26 +674,26 @@ void loop_actualization()
   // Start actuating EV after init time
   if (millis() > init_duration)
   {
-    for (int i = 0; i < 6; i++)
+    for (byte i = 0; i < 6; i++)
       arrayOfEV[i].update_state();
   }
 }
 
-void print_mem_value(int col, int line, int mem_address)
+void print_mem_value(byte col, byte line, byte mem_address)
 {
-  int mem_value;
+  byte mem_value;
   mem_value = eeprom.Read(mem_address);
   sprintf(buf, "%d", mem_value);
   u8g.drawStr(col, line, buf);
 }
 
-void print_on_screen(int col, int line, int num)
+void print_on_screen(byte col, byte line, byte num)
 {
   sprintf(buf, "%d", num);
   u8g.drawStr(col, line, buf);
 }
 
-void activate_screen(int value, int x, int y)
+void activate_screen(byte value, byte x, byte y)
 {
   switch (value)
   {
