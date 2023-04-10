@@ -9,7 +9,7 @@
 #include <AHT20.h> // AHT21
 
 // Program version
-byte versio = 1;
+const byte versio = 1;
 
 // Read / Write eeprom
 MYEEPROM eeprom = MYEEPROM();
@@ -278,7 +278,8 @@ void loop()
 
 void check_inactiveScreen()
 {
-  if (button_state == false && menu.rtc_sec != menu.sec)
+  int sec = eeprom.Read(mem_sec);
+  if (button_state == false && sec != menu.rtc_sec)
     inactive++;
   else if (button_state == true)
     inactive = 0;
@@ -335,6 +336,9 @@ void print_screen()
     auto_mode_screen();
     draw_cursor();
     break;
+  case 5:
+    meteo_screen();
+    break;
   case 6:
     clock_parameter_screen();
     draw_cursor();
@@ -365,10 +369,10 @@ void print_screen()
 void main_screen()
 {
   u8g.disableCursor();
-  sprintf(buf, "%02d/%02d/%04d", menu.day, menu.month, menu.year);
+  sprintf(buf, "%02d/%02d/%04d", menu.rtc_day, menu.rtc_month, menu.rtc_year);
   u8g.drawStr(34, 11, buf);
 
-  sprintf(buf, "%02d:%02d:%02d", menu.hour, menu.min, menu.sec);
+  sprintf(buf, "%02d:%02d:%02d", menu.rtc_hour, menu.rtc_min, menu.rtc_sec);
   u8g.drawStr(44, 21, buf);
 
   u8g.drawStr(15, 33, "1 : ");
@@ -412,6 +416,7 @@ void parameter_screen()
   u8g.drawStr(15, 22, "Mode Auto");
   u8g.drawStr(15, 33, "Heure");
   u8g.drawStr(15, 44, "Divers");
+  u8g.drawStr(15, 55, "Meteo");
 }
 
 void auto_mode_screen()
@@ -439,10 +444,10 @@ void auto_mode_screen()
 
 void clock_parameter_screen()
 {
-  sprintf(buf, "Date : %02d/%02d/%04d", menu.day, menu.month, menu.year);
+  sprintf(buf, "Date : %02d/%02d/%04d", menu.rtc_day, menu.rtc_month, menu.rtc_year);
   u8g.drawStr(15, 22, buf);
 
-  sprintf(buf, "Heure : %02d:%02d:%02d", menu.hour, menu.min, menu.sec);
+  sprintf(buf, "Heure : %02d:%02d:%02d", menu.rtc_hour, menu.rtc_min, menu.rtc_sec);
   u8g.drawStr(15, 44, buf);
 }
 
@@ -480,6 +485,17 @@ void other_parameter_screen()
     u8g.drawStr(100, 33, "j");
     break;
   }
+}
+
+void meteo_screen()
+{
+  u8g.drawStr(25, 11, " Meteo ");
+  u8g.drawStr(15, 22, "Temperature : ");
+  byte temperature = read_temperature();
+  print_on_screen(70, 22, temperature);
+  u8g.drawStr(15, 33, "Humidity : ");
+  byte humidity = read_humidity();
+  print_on_screen(70, 22, humidity);
 }
 
 void manual_mode_screen()
@@ -527,32 +543,47 @@ void draw_cursor()
     u8g.setCursorPos(12, (menu.actualLine * 11) + 5);
 }
 
-byte read_aht21()
+byte read_temperature()
 {
   float temperature;
   if (aht20.available() == true)
   {
-    // Get the new temperature and humidity value
-    temperature = aht20.getTemperature();
-    // float humidity = aht20.getHumidity();
+    temperature = aht20.getTemperature(); // Get the temperature
     eeprom.write(mem_dayTemp, temperature);
+    error[0] = false;
   }
   else
   {
     temperature = eeprom.Read(mem_dayTemp);
     error[0] = true;
   }
-  return temperature;
+
+  return (byte)temperature;
+}
+
+byte read_humidity()
+{
+  float humidity;
+  if (aht20.available() == true)
+  {
+    humidity = aht20.getHumidity(); // Get the humidity
+    eeprom.write(mem_dayHumidity, humidity);
+    error[0] = false;
+  }
+  else
+  {
+    humidity = eeprom.Read(mem_dayHumidity);
+    error[0] = true;
+  }
+  return (byte)humidity;
 }
 
 void update_auto_mode_with_ath21()
 {
-  // int humidity_value = -1;
-  byte temp_value = read_aht21();
+  byte temp_value = read_temperature();
 
   byte timeon;
   byte freq;
-  // eeprom.write(mem_dayHumidity, humidity_value);
 
   byte temp_change_season;
   temp_change_season = eeprom.Read(mem_tempSeason);
@@ -575,6 +606,8 @@ void update_auto_mode_with_ath21()
 // Update all EV state based on clock
 void ev_actualization()
 {
+  int sec = eeprom.Read(mem_sec);
+  int day = eeprom.Read(mem_day);
   // EV delayed
   if (menu.delay == true)
   {
@@ -607,8 +640,9 @@ void ev_actualization()
     if (manual_couter == 0)
       arrayOfEV[menu.manual_all - 1].remainingTimeOn = 300;
 
-    // actualization of remaining time every minute
-    if (menu.rtc_sec != menu.sec)
+    // actualization of remaining time every seconde
+
+    if (sec != menu.rtc_sec)
     {
       manual_couter++;
     }
@@ -652,30 +686,30 @@ void ev_actualization()
   }
 
   // Update EV state every minute
-  if (menu.rtc_sec != menu.sec)
+  if (sec != menu.rtc_sec)
   {
     // Set saved sec as actual sec
-    menu.rtc_sec = menu.sec;
+    eeprom.write(mem_sec, menu.rtc_sec);
 
     byte mem_value;
     // Check Temperature and humidity at 12 o'clock if auto mode on with aht21
     mem_value = eeprom.Read(mem_autoSeason);
     if (mem_value == 1)
     {
-      if (menu.rtc_day != menu.day)
+      if (day != menu.rtc_day)
       {
-        if (menu.hour == 12)
+        if (menu.rtc_hour == 12)
         {
           update_auto_mode_with_ath21();
         }
-        menu.rtc_day = menu.day;
+        eeprom.write(mem_day, menu.rtc_day);
       }
     }
 
     // Calculate next day on and remaining time
     for (byte i = 0; i < 6; i++)
     {
-      arrayOfEV[i].updateRemainingTime(eeprom, menu.hour, menu.min, menu.day, menu.month, menu.year);
+      arrayOfEV[i].updateRemainingTime(eeprom, menu.rtc_hour, menu.rtc_min, menu.rtc_day, menu.rtc_month, menu.rtc_year);
     }
   }
 

@@ -2,8 +2,6 @@
 
 MENU::MENU()
 {
-    rtc_sec = 0;
-    rtc_day = 0;
     screenValue = 0;
     actualScreen = 0;
     actualLine = 0;
@@ -25,9 +23,9 @@ void MENU::initClock(bool (&error)[2])
 
 void MENU::getClock(bool (&error)[2])
 {
-    rtc.get(&sec, &min, &hour, &day, &month, &year);
+    rtc.get(&rtc_sec, &rtc_min, &rtc_hour, &rtc_day, &rtc_month, &rtc_year);
 
-    if (day == 165)
+    if (rtc_day == 165)
         error[1] = true;
     else
         error[1] = false;
@@ -92,6 +90,9 @@ void MENU::forward()
             actualScreen = 7;
             actualLine = 1;
             break;
+        case 4:
+            actualScreen = 5;
+            break;
         }
         break;
     case 4:
@@ -138,6 +139,7 @@ void MENU::backward()
         break;
 
     case 4:
+    case 5:
     case 6:
     case 7:
         actualScreen = 2;
@@ -157,11 +159,6 @@ void MENU::up()
             actualLine--;
         break;
     case 2:
-        if (actualLine == 1)
-            actualLine = 3;
-        else
-            actualLine--;
-        break;
     case 4:
         if (actualLine == 1)
             actualLine = 4;
@@ -197,11 +194,6 @@ void MENU::down()
             actualLine++;
         break;
     case 2:
-        if (actualLine == 3)
-            actualLine = 1;
-        else
-            actualLine++;
-        break;
     case 4:
         if (actualLine == 4)
             actualLine = 1;
@@ -287,55 +279,55 @@ void MENU::updateValue(MYEEPROM eeprom, byte dir, byte value)
             case 0:
                 if (dir == 1)
                 {
-                    day = day + 1;
-                    if (day >= 31)
-                        day = 0;
+                    rtc_day = rtc_day + 1;
+                    if (rtc_day >= 31)
+                        rtc_day = 0;
                 }
                 else
                 {
-                    day = day - 1;
-                    if (day < 1)
+                    rtc_day = rtc_day - 1;
+                    if (rtc_day < 1)
                     {
-                        day = 31;
+                        rtc_day = 31;
                     }
                 }
 
                 rtc.stop();
-                rtc.set(sec, min, hour, day, month, year);
+                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
                 rtc.start();
                 break;
             case 1: // month
                 if (dir == 1)
                 {
-                    month = month + 1;
-                    if (month >= 12)
-                        month = 0;
+                    rtc_month = rtc_month + 1;
+                    if (rtc_month >= 12)
+                        rtc_month = 0;
                 }
                 else
                 {
-                    month = month - 1;
-                    if (month < 1)
-                        month = 12;
+                    rtc_month = rtc_month - 1;
+                    if (rtc_month < 1)
+                        rtc_month = 12;
                 }
                 rtc.stop();
-                rtc.set(sec, min, hour, day, month, year);
+                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
                 rtc.start();
                 break;
-            case 2: // annee
+            case 2: // year
                 if (dir == 1)
                 {
-                    year = year - 2000;
-                    year = year + 1;
+                    rtc_year = rtc_year - 2000;
+                    rtc_year = rtc_year + 1;
                 }
                 else
                 {
-                    year = year - 2000;
-                    year = year - 1;
-                    if (year < 0)
-                        year = 0;
+                    rtc_year = rtc_year - 2000;
+                    rtc_year = rtc_year - 1;
+                    if (rtc_year < 0)
+                        rtc_year = 0;
                 }
                 rtc.stop();
-                rtc.set(sec, min, hour, day, month, year);
+                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
                 rtc.start();
                 break;
             }
@@ -346,42 +338,42 @@ void MENU::updateValue(MYEEPROM eeprom, byte dir, byte value)
             case 0:
                 if (dir == 1)
                 {
-                    hour++;
-                    if (hour > 23)
-                        hour = 0;
+                    rtc_hour++;
+                    if (rtc_hour > 23)
+                        rtc_hour = 0;
                 }
                 else
                 {
-                    hour--;
-                    if (hour < 0)
-                        hour = 23;
+                    rtc_hour--;
+                    if (rtc_hour < 0)
+                        rtc_hour = 23;
                 }
                 rtc.stop();
-                rtc.set(sec, min, hour, day, month, year);
+                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
                 rtc.start();
                 break;
 
             case 1: // minute
                 if (dir == 1)
                 {
-                    min++;
-                    if (min > 59)
-                        min = 0;
+                    rtc_min++;
+                    if (rtc_min > 59)
+                        rtc_min = 0;
                 }
                 else
                 {
-                    min--;
-                    if (min < 0)
-                        min = 59;
+                    rtc_min--;
+                    if (rtc_min < 0)
+                        rtc_min = 59;
                 }
                 rtc.stop();
-                rtc.set(sec, min, hour, day, month, year);
+                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
                 rtc.start();
                 break;
             case 2: // seconde
-                sec = 0;
+                rtc_sec = 0;
                 rtc.stop();
-                rtc.set(sec, min, hour, day, month, year);
+                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
                 rtc.start();
                 break;
             }

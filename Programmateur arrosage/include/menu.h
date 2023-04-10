@@ -11,10 +11,8 @@ private:
 public:
     MENU();
     DS1307 rtc;
-    uint8_t sec, min, hour, day, month;
-    uint16_t year;
-    uint8_t rtc_sec;
-    uint8_t rtc_day;
+    uint8_t rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month;
+    uint16_t rtc_year;
     byte actualScreen;
     byte actualLine;
     byte cursorPos;

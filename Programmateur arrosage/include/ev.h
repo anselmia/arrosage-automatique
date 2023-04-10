@@ -12,8 +12,8 @@ private:
     byte num;
     byte evPin;
     byte evState;
-    int leap_year(int year);
-    void calculate_next_day(MYEEPROM eeprom, byte day, byte month, int year);
+    int leap_year(int rtc_year);
+    void calculate_next_day(MYEEPROM eeprom, byte rtc_day, byte rtc_month, int rtc_year);
     void ON();
     void OFF();
 
@@ -21,7 +21,7 @@ public:
     EV(byte pin, byte numEV);
     byte nextDayOn;
     int remainingTimeOn;
-    void updateRemainingTime(MYEEPROM eeprom, byte hr, byte min, byte day, byte month, int year);
+    void updateRemainingTime(MYEEPROM eeprom, byte rtc_hourr, byte rtc_min, byte rtc_day, byte rtc_month, int rtc_year);
     void updateSeason(MYEEPROM eeprom, byte timeon, byte freq);
     void init();
     void update_state();

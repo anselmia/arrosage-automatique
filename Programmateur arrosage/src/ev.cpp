@@ -37,16 +37,16 @@ void EV::update_state()
         ON();
 }
 
-void EV::calculate_next_day(MYEEPROM eeprom, byte day, byte month, int year)
+void EV::calculate_next_day(MYEEPROM eeprom, byte rtc_day, byte rtc_month, int rtc_year)
 {
     byte day_to_add;
     byte day_in_month;
     byte next_day;
 
     day_to_add = eeprom.Read(mem_autoFreq + (10 * num));
-    next_day = day + day_to_add;
+    next_day = rtc_day + day_to_add;
 
-    switch (month)
+    switch (rtc_month)
     {
     case 1: // 31
     case 3:
@@ -58,7 +58,7 @@ void EV::calculate_next_day(MYEEPROM eeprom, byte day, byte month, int year)
         day_in_month = 31;
         break;
     case 2: // 28
-        day_in_month = leap_year(year);
+        day_in_month = leap_year(rtc_year);
         break;
     case 4:
     case 6:
@@ -74,23 +74,23 @@ void EV::calculate_next_day(MYEEPROM eeprom, byte day, byte month, int year)
     nextDayOn = next_day;
 }
 
-int EV::leap_year(int year)
+int EV::leap_year(int rtc_year)
 {
     byte days_in_month;
     // leap year if perfectly divisible by 400
-    if (year % 400 == 0)
+    if (rtc_year % 400 == 0)
     {
         days_in_month = 29;
     }
     // not a leap year if divisible by 100
     // but not divisible by 400
-    else if (year % 100 == 0)
+    else if (rtc_year % 100 == 0)
     {
         days_in_month = 28;
     }
     // leap year if not divisible by 100
     // but divisible by 4
-    else if (year % 4 == 0)
+    else if (rtc_year % 4 == 0)
     {
         days_in_month = 29;
     }
@@ -103,7 +103,7 @@ int EV::leap_year(int year)
     return days_in_month;
 }
 
-void EV::updateRemainingTime(MYEEPROM eeprom, byte hr, byte min, byte day, byte month, int year)
+void EV::updateRemainingTime(MYEEPROM eeprom, byte rtc_hour, byte rtc_min, byte rtc_day, byte rtc_month, int rtc_year)
 {
     if (remainingTimeOn != 0)
     {
@@ -121,18 +121,18 @@ void EV::updateRemainingTime(MYEEPROM eeprom, byte hr, byte min, byte day, byte 
         if (eeprom.Read(mem_state + (10 * num)) == 1)
         {
             //  if clock h == auto start time hour
-            if (hr == eeprom.Read(mem_autoStartHour + (10 * num)))
+            if (rtc_hour == eeprom.Read(mem_autoStartHour + (10 * num)))
             {
                 //  if clock min == auto start time min
-                if (min == eeprom.Read(mem_autoStartMin + (10 * num)))
+                if (rtc_min == eeprom.Read(mem_autoStartMin + (10 * num)))
                 {
                     if (remainingTimeOn == 0)
                     {
                         // if not started once set next day as today
                         if (nextDayOn == 0)
-                            nextDayOn = day;
+                            nextDayOn = rtc_day;
                         // if clock day == next start day
-                        if (nextDayOn == day)
+                        if (nextDayOn == rtc_day)
                         {
                             // mise en route
                             time_on = eeprom.Read(mem_autoTimeOn + (10 * num)) * 60;
@@ -142,7 +142,7 @@ void EV::updateRemainingTime(MYEEPROM eeprom, byte hr, byte min, byte day, byte 
                                 time_on = max_time_on_ev;
 
                             remainingTimeOn = time_on;
-                            calculate_next_day(eeprom, day, month, year);
+                            calculate_next_day(eeprom, rtc_day, rtc_month, rtc_year);
                         }
                     }
                 }
