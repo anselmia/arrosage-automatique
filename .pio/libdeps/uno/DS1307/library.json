@@ -1,0 +1,22 @@
+{
+  "name": "DS1307",
+  "export": {},
+  "version": "1.0.0",
+  "frameworks": [
+    "arduino"
+  ],
+  "description": "DS1307 RTC (Real-Time-Clock)",
+  "platforms": [
+    "atmelavr"
+  ],
+  "repository": {
+    "url": "https://github.com/watterott/Arduino-Libs.git",
+    "type": "git"
+  },
+  "keywords": [
+    "i2c",
+    "rtc",
+    "time",
+    "clock"
+  ]
+}
