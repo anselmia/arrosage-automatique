@@ -103,7 +103,7 @@ int EV::leap_year(int rtc_year)
     return days_in_month;
 }
 
-void EV::updateRemainingTime(MYEEPROM eeprom, byte rtc_hour, byte rtc_min, byte rtc_day, byte rtc_month, int rtc_year)
+void EV::updateRemainingTime()
 {
     if (remainingTimeOn != 0)
     {
@@ -112,7 +112,10 @@ void EV::updateRemainingTime(MYEEPROM eeprom, byte rtc_hour, byte rtc_min, byte 
         if (remainingTimeOn < 0)
             remainingTimeOn = 0;
     }
+}
 
+void EV::updateTimeOn(MYEEPROM eeprom, byte rtc_hour, byte rtc_min, byte rtc_day, byte rtc_month, int rtc_year)
+{
     int time_on = 0;
     //  if mode auto on
     if (eeprom.Read(mem_autostate + (10 * num)) == 1)
@@ -159,10 +162,4 @@ void EV::updateRemainingTime(MYEEPROM eeprom, byte rtc_hour, byte rtc_min, byte 
         remainingTimeOn = 0;
         nextDayOn = 0;
     }
-}
-
-void EV::updateSeason(MYEEPROM eeprom, byte timeon, byte freq)
-{
-    eeprom.write(mem_autoTimeOn + (10 * num), timeon);
-    eeprom.write(mem_autoFreq + (10 * num), freq);
 }

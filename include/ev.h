@@ -21,8 +21,8 @@ public:
     EV(byte pin, byte numEV);
     byte nextDayOn;
     int remainingTimeOn;
-    void updateRemainingTime(MYEEPROM eeprom, byte rtc_hourr, byte rtc_min, byte rtc_day, byte rtc_month, int rtc_year);
-    void updateSeason(MYEEPROM eeprom, byte timeon, byte freq);
+    void updateRemainingTime();
+    void updateTimeOn(MYEEPROM eeprom, byte rtc_hour, byte rtc_min, byte rtc_day, byte rtc_month, int rtc_year);
     void init();
     void update_state();
 };

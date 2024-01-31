@@ -88,6 +88,11 @@ AHT20 aht20;
 unsigned long init_millis;
 unsigned long init_duration = 10000;
 
+// time
+int sec = 0;
+int min = 0;
+int day = 0;
+
 // meteo
 byte temperature = 0;
 byte humidity = 0;
@@ -283,7 +288,7 @@ void loop()
 
 void check_inactiveScreen()
 {
-  int sec = eeprom.Read(mem_sec);
+  //int sec = eeprom.Read(mem_sec);
   if (button_state == false && sec != menu.rtc_sec)
     inactive++;
   else if (button_state == true)
@@ -598,36 +603,13 @@ byte read_humidity()
   return (byte)humidity;
 }
 
-void update_auto_mode_with_ath21()
-{
-  byte temp_value = read_temperature();
-
-  byte timeon;
-  byte freq;
-
-  byte temp_change_season;
-  temp_change_season = eeprom.Read(mem_tempSeason);
-
-  if (temp_value <= temp_change_season)
-  {
-    timeon = eeprom.Read(mem_winterTimeon);
-    freq = eeprom.Read(mem_winterFreq);
-  }
-  else
-  {
-    timeon = eeprom.Read(mem_sumerTimeon);
-    freq = eeprom.Read(mem_sumerFreq);
-  }
-
-  for (byte i = 0; i < 6; i++)
-    arrayOfEV[i].updateSeason(eeprom, timeon, freq);
-}
-
 // Update all EV state based on clock
 void ev_actualization()
 {
-  int sec = eeprom.Read(mem_sec);
-  int day = eeprom.Read(mem_day);
+  // int sec = eeprom.Read(mem_sec);
+  // int day = eeprom.Read(mem_day);
+  day = menu.rtc_day;
+
   // EV delayed
   if (menu.delay == true)
   {
@@ -661,7 +643,6 @@ void ev_actualization()
       arrayOfEV[menu.manual_all - 1].remainingTimeOn = 300;
 
     // actualization of remaining time every seconde
-
     if (sec != menu.rtc_sec)
     {
       manual_couter++;
@@ -713,41 +694,24 @@ void ev_actualization()
     menu.reset_auto = false;
   }
 
-  // If EV has been desactivated, stop it
-  for (byte i = 0; i < 6; i++)
-  {
-    if (eeprom.Read(mem_state + (10 * (i + 1))) == 0)
-    {
-      arrayOfEV[i].remainingTimeOn = 0;
-      arrayOfEV[i].nextDayOn = 0;
-    }
-  }
-
-  // Update EV state every minute
+  // Update EV state every sec
   if (sec != menu.rtc_sec)
   {
     // Set saved sec as actual sec
-    eeprom.write(mem_sec, menu.rtc_sec);
-
-    byte mem_value;
-    // Check Temperature and humidity at 12 o'clock if auto mode on with aht21
-    mem_value = eeprom.Read(mem_autoSeason);
-    if (mem_value == 1)
-    {
-      if (day != menu.rtc_day)
-      {
-        if (menu.rtc_hour == 12)
-        {
-          update_auto_mode_with_ath21();
-        }
-        eeprom.write(mem_day, menu.rtc_day);
-      }
-    }
-
-    // Calculate next day on and remaining time
+    //eeprom.write(mem_sec, menu.rtc_sec);
+    sec = menu.rtc_sec;
     for (byte i = 0; i < 6; i++)
     {
-      arrayOfEV[i].updateRemainingTime(eeprom, menu.rtc_hour, menu.rtc_min, menu.rtc_day, menu.rtc_month, menu.rtc_year);
+      arrayOfEV[i].updateRemainingTime();
+    }
+    if (min != menu.rtc_min)
+    {
+      min = menu.rtc_min;
+      // Calculate next day on and time on
+      for (byte i = 0; i < 6; i++)
+      {
+        arrayOfEV[i].updateTimeOn(eeprom, menu.rtc_hour, menu.rtc_min, menu.rtc_day, menu.rtc_month, menu.rtc_year);
+      }
     }
   }
 
