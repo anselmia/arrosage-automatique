@@ -48,7 +48,7 @@ void EV::calculate_next_day(MYEEPROM eeprom, byte rtc_day, byte rtc_month, int r
 
     switch (rtc_month)
     {
-    case 1: // 31
+    case 1: // January / March / May / July / August / October / December 
     case 3:
     case 5:
     case 7:
@@ -57,10 +57,10 @@ void EV::calculate_next_day(MYEEPROM eeprom, byte rtc_day, byte rtc_month, int r
     case 12:
         day_in_month = 31;
         break;
-    case 2: // 28
+    case 2: // February
         day_in_month = leap_year(rtc_year);
         break;
-    case 4:
+    case 4: // April / June / September /November
     case 6:
     case 9:
     case 11:
@@ -120,13 +120,13 @@ void EV::updateTimeOn(MYEEPROM eeprom, byte rtc_hour, byte rtc_min, byte rtc_day
     //  if mode auto on
     if (eeprom.Read(mem_autostate + (10 * num)) == 1)
     {
-        // if ev state is on
+        // if ev state is activated
         if (eeprom.Read(mem_state + (10 * num)) == 1)
         {
-            //  if clock h == auto start time hour
+            //  if auto start time hour
             if (rtc_hour == eeprom.Read(mem_autoStartHour + (10 * num)))
             {
-                //  if clock min == auto start time min
+                //  if  auto start time min
                 if (rtc_min == eeprom.Read(mem_autoStartMin + (10 * num)))
                 {
                     if (remainingTimeOn == 0)
@@ -134,8 +134,8 @@ void EV::updateTimeOn(MYEEPROM eeprom, byte rtc_hour, byte rtc_min, byte rtc_day
                         // if not started once set next day as today
                         if (nextDayOn == 0)
                             nextDayOn = rtc_day;
-                        // if clock day == next start day
-                        if (nextDayOn == rtc_day)
+                        // if next start day
+                        else if (nextDayOn == rtc_day)
                         {
                             // mise en route
                             time_on = eeprom.Read(mem_autoTimeOn + (10 * num)) * 60;
@@ -153,13 +153,11 @@ void EV::updateTimeOn(MYEEPROM eeprom, byte rtc_hour, byte rtc_min, byte rtc_day
         }
         else
         {
-            remainingTimeOn = 0;
             nextDayOn = 0;
         }
     }
     else
     {
-        remainingTimeOn = 0;
         nextDayOn = 0;
     }
 }

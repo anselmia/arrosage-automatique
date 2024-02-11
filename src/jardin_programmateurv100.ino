@@ -120,7 +120,7 @@ void Init()
 
   // Init com with ds1307
   inii2c(0x68, 1);
-  //  initialisation de ds1307
+  //  initialisation of ds1307
   menu.initClock(error);
   Serial.println(F("clock ok"));
   Wire.begin(); // Join I2C bus
@@ -153,11 +153,11 @@ void Init()
   // Init memory
   // eeprom.init_memory();
 
-  u8g.firstPage(); // SÃ©lectionne la 1er page mÃ©moire de l'Ã©cran
+  u8g.firstPage(); // Select first page in memory
   do
   {
-    u8g.setFont(u8g_font_tpss);            // Utilise la police de caractÃ¨re standard
-    u8g.drawStr(30, 11, "Initialisation"); // 12 line
+    u8g.setFont(u8g_font_tpss);            // Select font
+    u8g.drawStr(30, 11, "Initialisation");
     if (error[1] == true)
       u8g.drawStr(10, 22, "erreur horloge");
 
@@ -288,7 +288,6 @@ void loop()
 
 void check_inactiveScreen()
 {
-  //int sec = eeprom.Read(mem_sec);
   if (button_state == false && sec != menu.rtc_sec)
     inactive++;
   else if (button_state == true)
@@ -606,8 +605,7 @@ byte read_humidity()
 // Update all EV state based on clock
 void ev_actualization()
 {
-  // int sec = eeprom.Read(mem_sec);
-  // int day = eeprom.Read(mem_day);
+ 
   day = menu.rtc_day;
 
   // EV delayed
@@ -698,7 +696,6 @@ void ev_actualization()
   if (sec != menu.rtc_sec)
   {
     // Set saved sec as actual sec
-    //eeprom.write(mem_sec, menu.rtc_sec);
     sec = menu.rtc_sec;
     for (byte i = 0; i < 6; i++)
     {
