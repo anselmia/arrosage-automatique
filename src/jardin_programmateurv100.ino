@@ -301,7 +301,7 @@ void check_inactiveScreen()
     u8g.sleepOff();
   }
 
-  if (inactive > 30)
+  if (inactive > 60)
   {
     digitalWrite(pin_screen, HIGH);
     u8g.sleepOn();
