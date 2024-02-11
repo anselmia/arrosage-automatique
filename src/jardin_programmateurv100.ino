@@ -9,7 +9,7 @@
 #include <AHT20.h> // AHT21
 
 // Program version
-const byte versio = 1;
+const byte versio = 1.1;
 
 // Read / Write eeprom
 MYEEPROM eeprom = MYEEPROM();
