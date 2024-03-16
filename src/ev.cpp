@@ -135,7 +135,7 @@ void EV::updateTimeOn(MYEEPROM eeprom, byte rtc_hour, byte rtc_min, byte rtc_day
                         if (nextDayOn == 0)
                             nextDayOn = rtc_day;
                         // if next start day
-                        else if (nextDayOn == rtc_day)
+                        if (nextDayOn == rtc_day)
                         {
                             // mise en route
                             time_on = eeprom.Read(mem_autoTimeOn + (10 * num)) * 60;
