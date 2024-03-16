@@ -299,10 +299,6 @@ void MENU::updateValue(MYEEPROM eeprom, byte dir, byte value)
                         rtc_day = 31;
                     }
                 }
-
-                rtc.stop();
-                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
-                rtc.start();
                 break;
             case 1: // month
                 if (dir == 1)
@@ -317,9 +313,6 @@ void MENU::updateValue(MYEEPROM eeprom, byte dir, byte value)
                     if (rtc_month < 1)
                         rtc_month = 12;
                 }
-                rtc.stop();
-                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
-                rtc.start();
                 break;
             case 2: // year
                 if (dir == 1)
@@ -334,11 +327,11 @@ void MENU::updateValue(MYEEPROM eeprom, byte dir, byte value)
                     if (rtc_year < 0)
                         rtc_year = 0;
                 }
-                rtc.stop();
-                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
-                rtc.start();
                 break;
             }
+            rtc.stop();
+            rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
+            rtc.start();
             break;
         case 3:
             switch (cursorPos)
@@ -356,11 +349,7 @@ void MENU::updateValue(MYEEPROM eeprom, byte dir, byte value)
                     if (rtc_hour < 0)
                         rtc_hour = 23;
                 }
-                rtc.stop();
-                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
-                rtc.start();
                 break;
-
             case 1: // minute
                 if (dir == 1)
                 {
@@ -374,17 +363,15 @@ void MENU::updateValue(MYEEPROM eeprom, byte dir, byte value)
                     if (rtc_min < 0)
                         rtc_min = 59;
                 }
-                rtc.stop();
-                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
-                rtc.start();
                 break;
             case 2: // seconde
                 rtc_sec = 0;
-                rtc.stop();
-                rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
-                rtc.start();
                 break;
             }
+            rtc.stop();
+            rtc.set(rtc_sec, rtc_min, rtc_hour, rtc_day, rtc_month, rtc_year);
+            rtc.start();
+            break;
         }
         break;
     case 7:
